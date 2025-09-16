@@ -209,10 +209,7 @@ function SideMenu() {
             onClick={showModal}
           >
             {/* 왼쪽 프로필 사진 */}
-            <UserImage 
-              src={user.pictureUrl} 
-              alt="User Image"
-            />
+            <UserImage src={`http://localhost/campus/member/getPicture?id=${user.mem_id}`} alt="User Image" />
 
             {/* 오른쪽 텍스트 영역 */}
             <div style={{ marginLeft: "12px" }}>

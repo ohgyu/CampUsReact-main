@@ -60,16 +60,19 @@ export function logoutUser() {
 export const getUserSession = () => {
   try {
     const user = JSON.parse(sessionStorage.getItem("user"));
-    if (!user) return { name: "", id: "", pictureUrl: "" };
+    if (!user) return { mem_name: "", mem_id: "", pictureUrl: "/img/user1.png" };
+
+    // 파일명만 뽑아내기
+    const fileName = user.picture ? user.picture.split("\\").pop().split("/").pop() : null;
 
     return {
       ...user,
-      pictureUrl: user.picture
-        ? `/upload/profile/${user.picture}`   // DB에 저장된 파일명 앞에 경로 붙여줌
-        : "/img/user1.png"                    // 기본 이미지
+      pictureUrl: fileName 
+        ? `/upload/profile/${fileName}`   // 서버 매핑된 URL로 변환
+        : "/img/user1.png"
     };
   } catch (err) {
     console.error("세션에서 사용자 정보를 가져오는데 실패:", err);
-    return { name: "", id: "", pictureUrl: "/img/user1.png" };
+    return { mem_name: "", mem_id: "", pictureUrl: "/img/user1.png" };
   }
 };
