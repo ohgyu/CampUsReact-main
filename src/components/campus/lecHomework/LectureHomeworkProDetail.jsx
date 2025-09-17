@@ -186,19 +186,97 @@ export default function LectureHomeworkProDetail() {
 
         <Card>
           {!isEditing ? (
-            <>
-              <CardTitle>{homework?.hwName}</CardTitle>
-              <CardMeta>
-                {fmtDateTime(homework?.hwStartDate)} ~ {fmtDateTime(homework?.hwEndDate)}
-              </CardMeta>
-              <CardHr />
-              <AssignBody>{homework?.hwDesc}</AssignBody>
-            </>
-          ) : (
-            <div style={{ padding: "0 10px" }}>
-              {/* 수정 폼은 생략 */}
-            </div>
-          )}
+  <>
+    <CardTitle>{homework?.hwName}</CardTitle>
+    <CardMeta>
+      {fmtDateTime(homework?.hwStartDate)} ~ {fmtDateTime(homework?.hwEndDate)}
+    </CardMeta>
+    <CardHr />
+    <AssignBody>{homework?.hwDesc}</AssignBody>
+  </>
+) : (
+  <div style={{ padding: "0 10px" }}>
+    <div style={{ marginBottom: 12 }}>
+      <label style={{ fontSize: 12, color: "#98a1a8" }}>과제명</label>
+      <input
+        type="text"
+        name="hwName"
+        value={form.hwName}
+        onChange={onChange}
+        style={{
+          width: "100%",
+          padding: 8,
+          borderRadius: 6,
+          border: "1px solid #d9d9d9",
+          marginTop: 4,
+        }}
+      />
+    </div>
+
+    <div style={{ marginBottom: 12 }}>
+      <label style={{ fontSize: 12, color: "#98a1a8" }}>설명</label>
+      <textarea
+        name="hwDesc"
+        value={form.hwDesc}
+        onChange={onChange}
+        rows={6}
+        style={{
+          width: "100%",
+          padding: 8,
+          borderRadius: 6,
+          border: "1px solid #d9d9d9",
+          marginTop: 4,
+        }}
+      />
+    </div>
+
+    <div style={{ marginBottom: 12, display: "flex", gap: 10 }}>
+      <div style={{ flex: 1 }}>
+        <label style={{ fontSize: 12, color: "#98a1a8" }}>시작일</label>
+        <input
+          type="date"
+          name="startDate"
+          value={form.startDate}
+          onChange={onChange}
+          style={{ width: "100%", padding: 6, borderRadius: 6, border: "1px solid #d9d9d9" }}
+        />
+      </div>
+      <div style={{ flex: 1 }}>
+        <label style={{ fontSize: 12, color: "#98a1a8" }}>시작 시간</label>
+        <input
+          type="time"
+          name="startTime"
+          value={form.startTime}
+          onChange={onChange}
+          style={{ width: "100%", padding: 6, borderRadius: 6, border: "1px solid #d9d9d9" }}
+        />
+      </div>
+    </div>
+
+    <div style={{ marginBottom: 12, display: "flex", gap: 10 }}>
+      <div style={{ flex: 1 }}>
+        <label style={{ fontSize: 12, color: "#98a1a8" }}>마감일</label>
+        <input
+          type="date"
+          name="endDate"
+          value={form.endDate}
+          onChange={onChange}
+          style={{ width: "100%", padding: 6, borderRadius: 6, border: "1px solid #d9d9d9" }}
+        />
+      </div>
+      <div style={{ flex: 1 }}>
+        <label style={{ fontSize: 12, color: "#98a1a8" }}>마감 시간</label>
+        <input
+          type="time"
+          name="endTime"
+          value={form.endTime}
+          onChange={onChange}
+          style={{ width: "100%", padding: 6, borderRadius: 6, border: "1px solid #d9d9d9" }}
+        />
+      </div>
+    </div>
+  </div>
+)}
 
           <CardHr />
           <CardFooter>
