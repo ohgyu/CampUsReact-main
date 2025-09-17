@@ -89,6 +89,7 @@ import { useAuthStore } from './commons/modalStore'
 import Loading from './commons/Loading'
 import Login from './commons/Login'
 import { RedirectAfterLogin } from './home/RedirectAfterLogin'
+import ConfirmModal from './commons/ConfirmModal';
 
 function CampusMain() {
   const isLoggedIn = useAuthStore(state => state.isLoggedIn)
@@ -168,6 +169,7 @@ function CampusMain() {
       </Routes>
         
       <Mypage />
+      <ConfirmModal />
       {/* <Mypage/>
       <MailDashBoard/>
       <LecturePlanModify/>

@@ -2,8 +2,10 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { usePasswordModalStore } from "../commons/modalStore";
+import useModalStore from "../commons/modalStore";   // ✅ ConfirmModal용 zustand store
 import Toast from "../commons/Toast";
 import axios from "axios";
+import ConfirmModal from "../commons/ConfirmModal";
 
 const Overlay = styled.div`
   position: fixed;
@@ -62,6 +64,7 @@ const Information = styled.span`
 
 function ChangePasswordModal() {
   const { visible, message, hideModal } = usePasswordModalStore();
+  const { showConfirm } = useModalStore();  // ✅ confirm 모달 store
   const [toastMsg, setToastMsg] = useState("");
   const [form, setForm] = useState({ currentPw: "", newPw: "", confirmPw: "" });
 
@@ -71,12 +74,8 @@ function ChangePasswordModal() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleConfirm = async () => {
-    // confirm 확인창
-    if (!window.confirm("비밀번호를 변경하시겠습니까?")) {
-      return;
-    }
-
+  // 실제 비밀번호 변경 처리
+  const doChangePassword = async () => {
     const pwPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,16}$/;
 
     if (!pwPattern.test(form.newPw)) {
@@ -105,8 +104,6 @@ function ChangePasswordModal() {
 
       if (res.data.success) {
         setToastMsg("비밀번호가 변경되었습니다. 다시 로그인해주세요.");
-
-        // ✅ 로그아웃 처리
         sessionStorage.clear();
         setTimeout(() => {
           window.location.href = "/login"; // 로그인 페이지 경로 맞게 수정
@@ -118,6 +115,11 @@ function ChangePasswordModal() {
       console.error(err);
       setToastMsg("서버 오류 발생");
     }
+  };
+
+  // 확인 버튼 → confirm 모달 띄움
+  const handleConfirm = () => {
+    showConfirm("비밀번호를 변경하시겠습니까?", doChangePassword);
   };
 
   const handleCancel = () => {
