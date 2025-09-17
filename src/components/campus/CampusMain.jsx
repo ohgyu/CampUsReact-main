@@ -164,8 +164,10 @@ function CampusMain() {
           <Route index element={<BoardList />}></Route>
           <Route path=':board_id' element={<BoardDetail />}></Route>
         </Route>
+        <Route path='/mypage' element={ user.mem_auth.includes("ROLE01") ? <Mypage /> : <MypagePro /> } />
       </Routes>
-        { user.mem_auth.includes("ROLE01") ? <Mypage /> : <MypagePro />}
+        
+      <Mypage />
       {/* <Mypage/>
       <MailDashBoard/>
       <LecturePlanModify/>

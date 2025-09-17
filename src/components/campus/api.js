@@ -33,7 +33,7 @@ export function getMypage(memId) {
 // 프로필 업로드
 export function uploadProfile(memId, pictureFile) {
   const formData = new FormData();
-  formData.append("mem_id", memId);
+  formData.append("memId", memId);
   formData.append("pictureFile", pictureFile);
 
   return axios.post("/api/member/profile", formData, {
@@ -62,13 +62,10 @@ export const getUserSession = () => {
     const user = JSON.parse(sessionStorage.getItem("user"));
     if (!user) return { mem_name: "", mem_id: "", pictureUrl: "/img/user1.png" };
 
-    // 파일명만 뽑아내기
-    const fileName = user.picture ? user.picture.split("\\").pop().split("/").pop() : null;
-
     return {
       ...user,
-      pictureUrl: fileName 
-        ? `/upload/profile/${fileName}`   // 서버 매핑된 URL로 변환
+      pictureUrl: user.picture 
+        ? `/api/member/getPicture?id=${user.mem_id}`
         : "/img/user1.png"
     };
   } catch (err) {

@@ -138,7 +138,10 @@ function SideMenu() {
   const { isOpen, closeMenu } = useSideMenuStore();
   const logout = useAuthStore(state => state.logout);
   const [toastMsg, setToastMsg] = useState("");
-  const user = getUserSession();
+
+  // ✅ user를 state로 관리
+  const [user, setUser] = useState(getUserSession());
+
   const [studentData, setStudentData] = useState(null);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
@@ -149,21 +152,20 @@ function SideMenu() {
   const [selectedLecId, setSelectedLecId] = useState(''); 
   const currentLecId = selectedLecId || lecIdFromPath || ''; 
   const { showModal } = useMypageModalStore();
+
   const handleLectureChange = (e) => {
     const lecId = e.target.value;
     setSelectedLecId(lecId);  
   };
 
-  // ✅ 마이페이지 이동
-//   const goMypage = () => {
-//   const memId = user.mem_id;  // 세션스토리지에서 가져온 로그인 사용자 id
-//   if (user.mem_auth === 'ROLE01') {
-//     navigate(`/mypage/student?memId=${memId}`);
-//   } else if (user.mem_auth === 'ROLE02') {
-//     navigate(`/mypage/professor?memId=${memId}`);
-//   }
-//   closeMenu();
-// };
+  // ✅ userUpdated 이벤트 구독
+  useEffect(() => {
+    const updateUser = () => {
+      setUser(getUserSession()); // 세션에서 다시 불러옴
+    };
+    window.addEventListener("userUpdated", updateUser);
+    return () => window.removeEventListener("userUpdated", updateUser);
+  }, []);
 
   useEffect(() => {
     if (memId) {
@@ -194,6 +196,8 @@ function SideMenu() {
     }
   };
 
+  if (!user) return null;
+
   return (
     <>
       <Overlay isOpen={isOpen} onClick={closeMenu} />
@@ -206,12 +210,12 @@ function SideMenu() {
               marginTop: "25px",
               cursor: "pointer" 
             }}
-            onClick={showModal}
+            onClick={() => showModal()}
           >
-            {/* 왼쪽 프로필 사진 */}
-            <UserImage src={`http://localhost/campus/member/getPicture?id=${user.mem_id}`} alt="User Image" />
-
-            {/* 오른쪽 텍스트 영역 */}
+            <UserImage 
+              src={`/api/member/getPicture?memId=${user.mem_id}&v=${Date.now()}`} 
+              alt="프로필" 
+            />
             <div style={{ marginLeft: "12px" }}>
               <div style={{ display: "flex", alignItems: "center" }}>
                 <Text>{user.mem_name}</Text>
