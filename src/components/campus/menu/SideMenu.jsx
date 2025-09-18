@@ -316,7 +316,14 @@ function SideMenu() {
               <StyledLink to={currentLecId ? `/online?memId=${memId}&lec_id=${currentLecId}` : '#'} onClick={closeMenu}>
                 <li className="nav-item"><p style={{ marginLeft: '80px' }}>온라인 강의</p></li>
               </StyledLink>
-              <StyledLink to={currentLecId ? `/atten?memId=${memId}&lec_id=${currentLecId}` : '#'} onClick={closeMenu}>
+              <StyledLink 
+                to={
+                  user.mem_auth === 'ROLE02'  // ROLE02 = 교수
+                    ? `/attendance/professor`
+                    : `/attendance/student`
+                }
+                onClick={closeMenu}
+              >
                 <li className="nav-item"><p style={{ marginLeft: '80px' }}>출결</p></li>
               </StyledLink>
               <StyledLink to={currentLecId ? `/homework?memId=${memId}&lec_id=${currentLecId}` : '#'} onClick={closeMenu}>

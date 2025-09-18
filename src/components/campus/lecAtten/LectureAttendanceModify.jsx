@@ -2,33 +2,23 @@ import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import { Cancle, clip } from "../img";
 import { Container } from "../topNav/TopNav";
-import { Button } from "../commons/WHComponent";
 
-const MobileShell = styled.div`
+const FullModal = styled.div`
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
   width: 100%;
-  background: #f7f7f7;
+  height: 100%;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  z-index: 2000;
 `;
 
-const TopLine = styled.div`
-  display: flex;
-  align-items: center;
-  height: 24px;
-  margin-bottom: 4px;
-`;
-const CloseBtn = styled.button`
-  width: 24px;
-  height: 24px;
-  border: 0;
-  background: transparent;
-  font-size: 20px;
-  line-height: 1;
-  color: #7b8794;
-  cursor: pointer;
-`;
 const Title = styled.h1`
   margin: 8px 10px 10px;
   font-size: 18px;
 `;
+
 const BrandDivider = styled.div`
   height: 2px;
   background: #2ec4b6;
@@ -64,13 +54,6 @@ const Avatar = styled.div`
   background: #e9eef2 url("https://dummyimage.com/44x44/cccccc/ffffff&text=%20") center/cover no-repeat;
   margin-left: 10px;
 `;
-const Dot = styled.span`
-  width: 3px;
-  height: 3px;
-  background: #cfd6dc;
-  border-radius: 50%;
-  display: inline-block;
-`;
 const Body = styled.div`
   margin: 10px 10px 100px;
   border-radius: 8px;
@@ -86,22 +69,19 @@ const Attachment = styled.div`
   border-radius: 12px;
   margin-left: 10px;
 `;
-
 const AttachmentIcon = styled.img`
   display: block;
   width: 14px;
   height: 14px;
-  background: #fff;
   object-fit: contain;
-  `;
-
+`;
 const AttachmentName = styled.div`
   font-size: 13px;
   color: #444;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  `;
+`;
 const ListBtnWrap = styled.div`
   display: flex;
   justify-content: flex-end;
@@ -225,12 +205,6 @@ const SubmitBtn = styled.button`
   cursor: ${p => (p.disabled ? "not-allowed" : "pointer")};
 `;
 
-const Line = styled.div`
-  width: 372px;
-  height: 12px;
-  color: #444444;
-  margin-top: 20px;
-`
 const CardHr = styled.div`
   width: 372px;
   height: 1px;
@@ -244,14 +218,13 @@ const Meta = styled.div`
   color: #98a1a8;
 `;
 
-export default function LectureAttendenceModify({
+export default function LectureAttendanceModify({
   onClose = () => {},
   onSubmit = (payload) => { alert(JSON.stringify(payload, null, 2)); }
 }) {
-  // mode: 'modify' | 'reject'
   const [mode, setMode] = useState("modify");
-  const [status, setStatus] = useState("결석");       // 출석 상태
-  const [memo, setMemo] = useState("");              // 메모/사유
+  const [status, setStatus] = useState("결석");
+  const [memo, setMemo] = useState("");
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -271,53 +244,55 @@ export default function LectureAttendenceModify({
   const handleSubmit = () => {
     if (!canSubmit) return;
     onSubmit({
-      mode,          // 'modify' or 'reject'
-      status,        // 출석/지각/결석 (modify일 때 의미 있음)
+      mode,
+      status,
       reason: memo.trim() || null
     });
   };
 
   return (
-      <MobileShell>
-        <Container style={{backgroundColor:'#fff',display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-            <img src={Cancle} style={{width:'19px', height:'19px'}}></img>
-        </Container>
- 
-        <div style={{ padding: '5px 20px 24px', backgroundColor:'#fff'}}>
+    <FullModal>
+      {/* 헤더 */}
+      <Container style={{backgroundColor:'#fff', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+        <img
+          src={Cancle}
+          alt="닫기"
+          style={{width:'19px', height:'19px', cursor:'pointer'}}
+          onClick={onClose}
+        />
+      </Container>
+
+      {/* 본문 */}
+      <div style={{ padding: '5px 20px 24px', backgroundColor:'#fff', flex: 1, overflowY:'auto' }}>
         <Title>출결</Title>
         <BrandDivider />
 
         <Card>
           <PostTitle>[2025-04-11] 출석 문의</PostTitle>
-
           <MetaRow>
             <Avatar />
             <span>권오규</span>
             <Meta>ㅣ</Meta>
             <span>2025-08-29 21:49</span>
           </MetaRow>
-
           <Body>
             교수님 안녕하세요 자바 프로그래밍 수업을 듣는 권오규 입니다.
             다음이 아닌 이번 4/11 수업에 예비군 훈련을 다녀와 수업에 참여하지 못했습니다.
             출석으로 변경 부탁드립니다. 예비군 훈련증 파일 첨부 하였습니다!
           </Body>
-
           <Attachment>
-              <AttachmentIcon src={clip}/>
-              <AttachmentName>권오규 예비군 확인증.pdf</AttachmentName>
+            <AttachmentIcon src={clip}/>
+            <AttachmentName>권오규 예비군 확인증.pdf</AttachmentName>
           </Attachment>
           <CardHr/>
           <ListBtnWrap>
             <GhostBtn>목록</GhostBtn>
           </ListBtnWrap>
         </Card>
-        </div>
-        <div style={{ padding: '1px 20px 24px', backgroundColor:'#fff', marginTop:'20px'}}>
+
         <Section>
           <SectionHead>출결 변경</SectionHead>
           <SectionDivider />
-
           <Segments>
             <SegBtn active={mode === "modify"} onClick={() => setMode("modify")}>변경</SegBtn>
             <SegBtn active={mode === "reject"} onClick={() => setMode("reject")}>거절</SegBtn>
@@ -330,7 +305,6 @@ export default function LectureAttendenceModify({
                   <span>{status}</span>
                   <Caret>▾</Caret>
                 </SelectBox>
-
                 {open && (
                   <Menu role="listbox">
                     {statuses.map((s) => (
@@ -342,7 +316,6 @@ export default function LectureAttendenceModify({
                   </Menu>
                 )}
               </Field>
-
               <TextInput
                 placeholder=""
                 value={memo}
@@ -363,7 +336,7 @@ export default function LectureAttendenceModify({
             <SubmitBtn disabled={!canSubmit} onClick={handleSubmit}>등록</SubmitBtn>
           </SubmitWrap>
         </Section>
-        </div>
-      </MobileShell>
+      </div>
+    </FullModal>
   );
 }

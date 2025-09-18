@@ -63,6 +63,7 @@ import LectureAttendanceChange from './lecAtten/LectureAttendanceChange'
 import LectureAttendanceListPro from './lecAtten/LectureAttendanceListPro'
 import LectureAttendanceListStu from './lecAtten/LectureAttendanceListStu'
 import LectureAttendanceModify from './lecAtten/LectureAttendanceModify'
+import AttandanceModal from './commons/ConfirmModal';
 
 import ProjectObjectList from './proObject/ProjectObjectList'
 import ProjectObjectWrapper from './proObject/ProjectObjectWrapper'
@@ -90,6 +91,7 @@ import Loading from './commons/Loading'
 import Login from './commons/Login'
 import { RedirectAfterLogin } from './home/RedirectAfterLogin'
 import ConfirmModal from './commons/ConfirmModal';
+import AttendanceModal from "./lecAtten/AttendanceModal";
 
 function CampusMain() {
   const isLoggedIn = useAuthStore(state => state.isLoggedIn)
@@ -137,9 +139,8 @@ function CampusMain() {
           <Route index element={<LectureOnlineList />}></Route>
           <Route path=':lecvid_id' element={<LectureOnlineDetail />}></Route>
         </Route>
-        <Route path='/JAVA101/atten' element={<LectureAttendanceWrapper />}>
-          <Route index element={<LectureAttendanceListStu />}></Route>
-        </Route>
+          <Route path="/attendance/professor" element={<LectureAttendanceListPro />} />
+          <Route path="/attendance/student" element={<LectureAttendanceListStu />} />
         <Route path='/homework' element={<LectureHomeworkWrapper />}>
           <Route index element={<LectureHomeworkList />} />
           <Route path=':hwNo/:stuId' element={<LectureHomeworkDetail />} />
@@ -169,7 +170,9 @@ function CampusMain() {
       </Routes>
         
       <Mypage />
-      <ConfirmModal />
+      <LectureAttendanceChange />
+      <AttendanceModal /> 
+      <AttandanceModal />
       {/* <Mypage/>
       <MailDashBoard/>
       <LecturePlanModify/>

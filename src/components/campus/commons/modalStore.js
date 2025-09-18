@@ -27,10 +27,23 @@ export const usePasswordModalStore = create((set) => ({
 
   hideModal: () => set({ visible: false, message: "", onConfirm: null, onCancel: null }),
 }));
+
+export const useAttendanceChangeStore = create((set) => ({
+  visible: false,
+  show: () => set({ visible: true }),
+  hide: () => set({ visible: false }),
+}));
+
+export const useAttendanceModifyStore = create((set) => ({
+  visible: false,
+  show: () => set({ visible: true }),
+  hide: () => set({ visible: false }),
+}));
+
 export const useAttendanceModalStore = create((set) => ({
-  visible: false,       // 모달 보이기 여부
-  message: "",          // 모달 메시지
-  onCancel: null,       // 취소 시 실행할 함수
+  visible: false,
+  message: "",
+  onCancel: null,
   viewModal: (message = "", onCancel = null) =>
     set({ visible: true, message, onCancel }),
   hideModal: () =>

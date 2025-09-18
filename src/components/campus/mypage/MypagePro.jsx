@@ -9,7 +9,7 @@ import { Picture, PictureContainer, PictureModifyBtn, Table, TableOverView,
         TableText, TableTitle, TitleText, Wrap,
 } from '../mypage/Mypage'
 import { useMypageModalStore, usePasswordModalStore } from '../commons/modalStore'
-import { ExitButton } from '../lecAtten/AttandanceModal'
+import { ExitButton } from '../lecAtten/AttendanceModal'
 import { Overlay } from '../proObject/ProjectObjectFeedback'
 import Toast from '../commons/Toast'
 

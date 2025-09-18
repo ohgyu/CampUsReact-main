@@ -7,6 +7,8 @@ import {
     AttenBox, AttenText, AttenChangeIng, AttenChange, AttenPass,
     PageNation, PageArrowButton, PageNumText, PageNumberButton, PageText }
     from '../commons/WHComponent'
+import { useNavigate } from "react-router-dom";
+import { useAttendanceChangeStore, useAttendanceModalStore } from "../commons/modalStore";
 
 const AttenDate = styled.div`
     font-size: 12px;
@@ -23,10 +25,13 @@ const NumberInput = styled.input`
     font-size: 14px;
     margin-left: 23px;
     margin-top: 12px;
-    
 `
 
+
 function LectureAttendanceList() {
+    const navigate = useNavigate();
+    const { viewModal } = useAttendanceModalStore();
+    const { show } = useAttendanceChangeStore();
 
   return (
     <>
@@ -37,60 +42,92 @@ function LectureAttendanceList() {
                 </FlexDiv>
             </ListHeader>
             <NumberContainer>
-                <Title style={{textAlign:'center', marginTop:'13px'}}>05-01 8주차 출석</Title>
+                <Title style={{textAlign:'center', marginTop:'13px'}}>09-26 7주차 출석</Title>
                 <NumberInput placeholder='숫자를 입력해주세요'></NumberInput>
                 <Button style={{width:'84px', height:'30px', lineHeight:'20px', marginLeft:'142px', marginTop:'10px'}}>출석하기</Button>
             </NumberContainer>
             <WHContainer style={{height:'76px'}}>
                 <div>
                     <FlexDiv>
-                        <Title>1주차</Title>
-                        <DateBox style={{marginLeft:'10px', marginTop:'1px'}}>(03-03 ~ 03-08)</DateBox>
+                        <Title>6주차</Title>
+                        <DateBox style={{marginLeft:'10px', marginTop:'1px'}}>(09-22 ~ 09-26)</DateBox>
                     </FlexDiv>
-                    <AttenChange>이의신청</AttenChange>
                 </div>
                 <AttenBox>
-                    <AttenDate>03-05 (수)</AttenDate>
+                    <AttenDate>09-22 (월)</AttenDate>
+                    <AttenText>출석</AttenText>
+                </AttenBox>
+                <AttenBox>
+                    <AttenDate>09-24 (수)</AttenDate>
+                    <AttenText>출석</AttenText>
+                </AttenBox>
+            </WHContainer>
+            <WHContainer style={{height:'76px'}}>
+                <div>
+                    <FlexDiv>
+                        <Title>5주차</Title>
+                        <DateBox style={{marginLeft:'10px', marginTop:'1px'}}>(09-15 ~ 09-19)</DateBox>
+                    </FlexDiv>
+                </div>
+                <AttenBox>
+                    <AttenDate>09-15 (월)</AttenDate>
+                    <AttenText>출석</AttenText>
+                </AttenBox>
+                <AttenBox>
+                    <AttenDate>03-17 (수)</AttenDate>
+                    <AttenText>출석</AttenText>
+                </AttenBox>
+            </WHContainer>
+            <WHContainer style={{height:'76px'}}>
+                <div>
+                    <FlexDiv>
+                        <Title>4주차</Title>
+                        <DateBox style={{marginLeft:'10px', marginTop:'1px'}}>(09-08 ~ 09-12)</DateBox>
+                    </FlexDiv>
+                    <AttenChange onClick={() => show()}>이의신청</AttenChange>
+                </div>
+                <AttenBox>
+                    <AttenDate>09-08 (월)</AttenDate>
                     <AttenText>출석</AttenText>
                 </AttenBox>
                 <AttenBox style={{backgroundColor:'#FFF2B7'}}>
-                    <AttenDate>03-05 (수)</AttenDate>
+                    <AttenDate>09-10 (수)</AttenDate>
                     <AttenText>지각</AttenText>
                 </AttenBox>
             </WHContainer>
             <WHContainer style={{height:'76px'}}>
                 <div>
                     <FlexDiv>
-                        <Title>1주차</Title>
-                        <DateBox style={{marginLeft:'10px', marginTop:'1px'}}>(03-03 ~ 03-08)</DateBox>
+                        <Title>3주차</Title>
+                        <DateBox style={{marginLeft:'10px', marginTop:'1px'}}>(09-01 ~ 09-05)</DateBox>
                     </FlexDiv>
                 </div>
                 <AttenBox>
-                    <AttenDate>03-05 (수)</AttenDate>
+                    <AttenDate>09-01 (월)</AttenDate>
                     <AttenText>출석</AttenText>
                 </AttenBox>
                 <AttenBox>
-                    <AttenDate>03-05 (수)</AttenDate>
+                    <AttenDate>09-03 (수)</AttenDate>
                     <AttenText>출석</AttenText>
                 </AttenBox>
             </WHContainer>
             <WHContainer style={{height:'76px'}}>
                 <div>
                     <FlexDiv>
-                        <Title>1주차</Title>
-                        <DateBox style={{marginLeft:'10px', marginTop:'1px'}}>(03-03 ~ 03-08)</DateBox>
+                        <Title>2주차</Title>
+                        <DateBox style={{marginLeft:'10px', marginTop:'1px'}}>(08-25 ~ 08-29)</DateBox>
                     </FlexDiv>
                     <FlexDiv>
-                        <AttenChange>이의신청</AttenChange>
-                        <AttenPass></AttenPass>
+                        <AttenChange onClick={() => show()}>이의신청</AttenChange>
+                        <AttenPass onClick={() => viewModal("이의 신청이 반려되었습니다.")}/>
                     </FlexDiv>
                 </div>
                 <AttenBox style={{backgroundColor:'#FFB8B8'}}>
-                    <AttenDate>03-05 (수)</AttenDate>
+                    <AttenDate>08-25 (월)</AttenDate>
                     <AttenText>결석</AttenText>
                 </AttenBox>
                 <AttenBox>
-                    <AttenDate>03-05 (수)</AttenDate>
+                    <AttenDate>08-27 (수)</AttenDate>
                     <AttenText>출석</AttenText>
                 </AttenBox>
             </WHContainer>
@@ -98,16 +135,16 @@ function LectureAttendanceList() {
                 <div>
                     <FlexDiv>
                         <Title>1주차</Title>
-                        <DateBox style={{marginLeft:'10px', marginTop:'1px'}}>(03-03 ~ 03-08)</DateBox>
+                        <DateBox style={{marginLeft:'10px', marginTop:'1px'}}>(08-18 ~ 08-22)</DateBox>
                     </FlexDiv>
                     <AttenChangeIng>대기중</AttenChangeIng>
                 </div>
                 <AttenBox style={{backgroundColor:'#FFB8B8'}}>
-                    <AttenDate>03-05 (수)</AttenDate>
+                    <AttenDate>08-18 (월)</AttenDate>
                     <AttenText>결석</AttenText>
                 </AttenBox>
                 <AttenBox>
-                    <AttenDate>03-05 (수)</AttenDate>
+                    <AttenDate>08-20 (수)</AttenDate>
                     <AttenText>출석</AttenText>
                 </AttenBox>
             </WHContainer>

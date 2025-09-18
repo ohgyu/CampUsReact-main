@@ -10,7 +10,7 @@ import useModalStore, { useProjectFeedbackModalStore } from '../commons/modalSto
 import styled from 'styled-components'
 import { Table, TableOverView, TableText, TableTitle, TitleText } from '../mypage/Mypage'
 import { TableTitles, TitleTexts } from '../lecPlan/LecturePlanDetail'
-import { ExitButton } from '../lecAtten/AttandanceModal'
+import { ExitButton } from '../lecAtten/AttendanceModal'
 
 export const Overlay = styled.div`
   position: fixed;
