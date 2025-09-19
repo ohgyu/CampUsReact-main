@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import dd from "../video/Lecture1.mp4";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { getLectureVideoDetail, getUserSession } from "../api";
 
+// ====== styled-components 그대로 유지 ======
 const PageWrap = styled.div`
   display: flex;
   justify-content: center;
@@ -107,44 +109,72 @@ const Button = styled.button`
   margin-right: 10px;
 `;
 
-export default function LectureOnlineDetail({
-  weekLabel = "1주차",
-  period = "2025-09-02 ~ 2025-09-03",
-  title = "객체지향 핵심 이해",
-  description = "자바로 배우는 고급 프로그래밍 수업",
-  videoSrc = dd,
-  posterSrc = "",
-}) {
+// ====== 컴포넌트 ======
+export default function LectureOnlineDetail() {
+  const [searchParams] = useSearchParams();
+  const lecId = searchParams.get("lec_id");
+  const lecvid_id = searchParams.get("lecvid_id");
+  const memId = searchParams.get("memId");
+  const navigate = useNavigate(); 
+
+  const [video, setVideo] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!lecId || !lecvid_id || !memId) return;
+
+    setLoading(true);
+    getLectureVideoDetail(lecId, lecvid_id, memId)
+      .then(res => setVideo(res.data.video))
+      .catch(err => console.error("강의 상세 불러오기 실패:", err))
+      .finally(() => setLoading(false));
+  }, [lecId, lecvid_id, memId]);
+
+  if (loading) return <div style={{ textAlign:"center", marginTop:"50px" }}>불러오는 중...</div>;
+  if (!video) return <div style={{ textAlign:"center", marginTop:"50px" }}>강의를 찾을 수 없습니다.</div>;
+
   return (
     <PageWrap>
       <MobileShell>
         <TopBar>
           <PageTitle>온라인 강의</PageTitle>
           <TopActions>
-            <ModifyBtn>수정</ModifyBtn>
+            <ModifyBtn 
+            onClick={() => navigate(`/online/${lecvid_id}/modify?lec_id=${lecId}&memId=${memId}`)}>수정</ModifyBtn>
           </TopActions>
         </TopBar>
         <PageDivider />
 
-        <Title>{title}</Title>
+        <Title>{video.lecvidName}</Title>
         <MetaRow>
-          <span>{weekLabel}</span>
-          <span>{period}</span>
+          <span>{video.lecvidWeek || "주차 미정"}</span>
+          <span>
+            {video.lecvidDeadline
+              ? new Date(video.lecvidDeadline).toLocaleDateString("ko-KR")
+              : "기간 미정"}
+          </span>
         </MetaRow>
 
         <CardHr />
 
         <VideoWrap>
-          <VideoTag controls preload="metadata" poster={posterSrc} src={videoSrc} />
+          <VideoTag
+            controls
+            preload="metadata"
+            poster={`http://localhost/campus/${video.lecvidThumbnail}`}
+            src={`http://localhost/campus/${video.lecvidVidpath}`}
+          />
         </VideoWrap>
         <CardHr />
 
-        <Desc>{description}</Desc>
+        <Desc>{video.lecvidDetail || "강의 설명이 없습니다."}</Desc>
 
         <CardHr />
 
         <Footer>
-          <Button>목록</Button>
+          <Button onClick={() => navigate(`/online?lec_id=${lecId}&memId=${memId}`)}>
+            목록
+          </Button>
         </Footer>
       </MobileShell>
     </PageWrap>

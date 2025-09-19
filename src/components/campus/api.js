@@ -56,6 +56,60 @@ export function logoutUser() {
   return axios.post("/api/login/logout", {});
 }
 
+// 영상 목록 조회
+export function getLectureVideoList(lecId, memId, week = "1주차") {
+  return axios.get("/api/lecture/vidlist", {
+    params: { lecId, memId, week },
+  });
+}
+
+// 영상 상세 조회
+export function getLectureVideoDetail(lecId, lecvidId, memId) {
+  return axios.get("/api/lecture/detail", {
+    params: { lecId, lecvidId, memId },
+  });
+}
+
+// 영상 등록
+export function registerLectureVideo(lecId, title, videoFile, thumbFile) {
+  const formData = new FormData();
+  formData.append("lecId", lecId);
+  formData.append("title", title);
+  formData.append("videoFile", videoFile);
+  formData.append("thumbFile", thumbFile);
+
+  return axios.post("/api/lecture/register", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+}
+
+// 영상 수정
+export function modifyLectureVideo(lecvidId, title, detail, week, videoFile, thumbFile) {
+  const formData = new FormData();
+  formData.append("lecvidId", lecvidId);
+  formData.append("title", title);
+  formData.append("detail", detail);
+  formData.append("week", week);
+
+  if (videoFile instanceof File) {
+    formData.append("videoFile", videoFile);
+  }
+  if (thumbFile instanceof File) {
+    formData.append("thumbFile", thumbFile);
+  }
+
+  return axios.post("/api/lecture/modify", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+}
+
+// 진행도 업데이트
+export function updateLectureProgress(aNo, progress) {
+  return axios.post("/api/lecture/progress", null, {
+    params: { aNo, progress },
+  });
+}
+
 // 세션에서 사용자 가져오기
 export const getUserSession = () => {
   try {

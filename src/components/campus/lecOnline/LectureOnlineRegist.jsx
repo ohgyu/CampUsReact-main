@@ -60,7 +60,7 @@ export const RegistTextarea = styled.textarea`
         resize: none ;
         outline:none;
 `
-function LectureOnlineRegist() {
+function LectureOnlineRegist({ onClose }) {
     const [open, setOpen] = useState(false);
     const [selected, setSelected] = useState("주차선택");
     const [file, setFile] = useState(null);
@@ -113,7 +113,7 @@ const handleRegister = () => {
     return (
         <>
             <Container style={{ backgroundColor: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                <img src={Cancle} style={{ width: '19px', height: '19px' }}></img>
+                <img src={Cancle} style={{ width: '19px', height: '19px', cursor: 'pointer' }} onClick={onClose} alt="close"/>
                 <RegistButton style={{ width: '48px', height: '26px', marginTop:'5px' }} onClick={handleRegister}>등록</RegistButton>
             </Container>
                 <Wrap>

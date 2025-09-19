@@ -135,9 +135,14 @@ function CampusMain() {
           <Route index element={<LectureNoticeList />}></Route>
           <Route path=':id' element={<LectureNoticeDetail />}></Route>
         </Route>
-        <Route path='/JAVA101/online' element={<LectureOnlineWrapper />}>
-          <Route index element={<LectureOnlineList />}></Route>
-          <Route path=':lecvid_id' element={<LectureOnlineDetail />}></Route>
+        <Route path='/course/:lecId/online' element={<LectureOnlineWrapper />}>
+          <Route index element={<LectureOnlineList />} />
+          <Route path=':lecvid_id' element={<LectureOnlineDetail />} />
+        </Route>
+        <Route path='/online' element={<LectureOnlineWrapper />}>
+          <Route index element={<LectureOnlineList />} />
+          <Route path=':lecvid_id' element={<LectureOnlineDetail />} />
+          <Route path=':lecvid_id/modify' element={<LectureOnlineModify />} />
         </Route>
           <Route path="/attendance/professor" element={<LectureAttendanceListPro />} />
           <Route path="/attendance/student" element={<LectureAttendanceListStu />} />
