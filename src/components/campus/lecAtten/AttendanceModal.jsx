@@ -70,7 +70,7 @@ const Line = styled.div`
     color: #aaa;
     font-size: 12px;
  `
-function AttandanceModal() {
+function AttendanceModal() {
     const { visible, message, onCancel, hideModal } = useAttendanceModalStore();
 
      if (!visible) return null;
@@ -100,4 +100,4 @@ function AttandanceModal() {
   );
 }
 
-export default AttandanceModal;
+export default AttendanceModal;

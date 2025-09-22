@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
@@ -28,32 +29,33 @@ export const usePasswordModalStore = create((set) => ({
   hideModal: () => set({ visible: false, message: "", onConfirm: null, onCancel: null }),
 }));
 
-export const useAttendanceChangeStore = create((set) => ({
-  visible: false,
-  show: () => set({ visible: true }),
-  hide: () => set({ visible: false }),
-}));
-
-export const useAttendanceModifyStore = create((set) => ({
-  visible: false,
-  show: () => set({ visible: true }),
-  hide: () => set({ visible: false }),
-}));
-
 export const useAttendanceModalStore = create((set) => ({
-  visible: false,
-  message: "",
-  onCancel: null,
+  visible: false,       // 모달 보이기 여부
+  message: "",          // 모달 메시지
+  onCancel: null,       // 취소 시 실행할 함수
   viewModal: (message = "", onCancel = null) =>
     set({ visible: true, message, onCancel }),
   hideModal: () =>
     set({ visible: false, message: "", onCancel: null }),
 }));
-
-export const useProjectFeedbackModalStore = create((set) => ({
+export const useProjectFeedbackModifyModalStore = create((set) => ({
   visible: false,
-  showModal: () => set({ visible: true }),
-  hideModal: () => set({ visible: false }),
+  rm_id: null,
+  project_id: null,
+  eval_id: null,
+  memId: null,
+  showModal: ({ rm_id, project_id, eval_id, memId }) =>
+    set({ visible: true, rm_id, project_id, eval_id, memId }),
+  hideModal: () =>
+    set({ visible: false, rm_id: null, project_id: null, eval_id: null, memId: null }),
+}));
+export const useProjectFeedbackModalStore = create((set) => ({
+    visible: false,
+    rm_id: null,
+    project_id: null,
+    memId: null,
+    showModal: ({ rm_id, project_id, memId }) => set({ visible: true, rm_id, project_id, memId }),
+    hideModal: () => set({ visible: false, rm_id: null, project_id: null, memId: null }),
 }));
 
 export const useMypageModalStore = create((set) => ({
@@ -92,6 +94,11 @@ export const useLecNoticeRegistModalStore = create((set) => ({
   showModal: () => set({ visible: true }),
   hideModal: () => set({ visible: false }),
 }));
+export const useMailWriteModalStore = create((set) => ({
+  visible: false,
+  showModal: () => set({ visible: true }),
+  hideModal: () => set({ visible: false }),
+}));
 export const useAuthStore = create(
   persist(
     set => ({
@@ -106,5 +113,83 @@ export const useAuthStore = create(
     }
   )
 )
+export const useProjectTeamModifyModalStore = create((set) => ({
+  visible: false,
+  project_id: null,
+  showModal: (project_id) => set({ visible: true, project_id }), 
+  hideModal: () => set({ visible: false, project_id: null }),
+}));
+export const useProjectTeamModifyCheckModalStore = create((set) => ({
+  visible: false,
+  project_id: null,
+  showModal: (id) => set({ visible: true, project_id: id }),
+  hideModal: () => set({ visible: false, project_id: null }),
+}));
+export const useProjectDetailModalStore = create((set) => ({
+  visible: false,
+  project_id: null,
+  showModal: (id) => set({ visible: true, project_id: id }),
+  hideModal: () => set({ visible: false, project_id: null }),
+}));
+export const useProjectTeamRegistModalStore = create((set) => ({
+  visible: false,
+  showModal: () => set({ visible: true }),
+  hideModal: () => set({ visible: false }),
+}));
+export const useTeamSearchModalStore = create((set) => ({
+  visible: false,
+  selectedTeamLeader: null,
+  showModal: () => set({ visible: true }),
+  hideModal: () => set({ visible: false }),
+   setSelectedTeamLeader: (prof) => set({ selectedTeamLeader: prof })
+}));
+export const useTeamMemberModalStore = create((set) => ({
+  visible: false,
+  selectedTeamMember: [],
+  showModal: () => set({ visible: true }),
+  hideModal: () => set({ visible: false }),
+  // prof 혹은 members 중 하나를 전달
+  setSelectedTeamMember: (membersOrProf) =>
+    set({
+      selectedTeamMember: Array.isArray(membersOrProf)
+        ? membersOrProf
+        : [membersOrProf], // 단일 객체도 배열로 감싸서 저장
+    }),
+}));
+export const useTeamProfessorModalStore = create((set) => ({
+  visible: false,
+  selectedProfessor: null,
+  showModal: () => set({ visible: true }),
+  hideModal: () => set({ visible: false }),
+  setSelectedProfessor: (prof) => set({ selectedProfessor: prof })
+}));
+export const useToastStore = create((set) => ({
+  message: "",
+  duration: 3000,
+  showToast: (msg, time) => {
+    set({ message: "" }); // 먼저 초기화
+    setTimeout(() => set({ message: msg }), 50); // 50ms 뒤에 다시 메시지 표시
+    setTimeout(() => set({ message: "" }), (time || 3000) + 50); // 표시 시간 후 숨기기
+  },
+  hideToast: () => set({ message: "" }),
+}));
+
+export const useAttendanceChangeStore = create((set) => ({
+  visible: false,
+  show: () => set({ visible: true }),
+  hide: () => set({ visible: false }),
+}));
+
+export const useAttendanceModifyStore = create((set) => ({
+  visible: false,
+  show: () => set({ visible: true }),
+  hide: () => set({ visible: false }),
+}));
+
+export const useHomeworkProRegistStore = create((set) => ({
+  visible: false,
+  showModal: () => set({ visible: true }),
+  hideModal: () => set({ visible: false }),
+}));
 
 export default useModalStore;

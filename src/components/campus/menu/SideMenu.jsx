@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { user1, home, homehv, lecture, lecturehv, project, projecthv,
-        post, posthv, mypage
+import {
+  user1, home, homehv, lecture, lecturehv, project, projecthv,
+  post, posthv, mypage
 } from '../img'
 import { useAuthStore, useMypageModalStore, useSideMenuStore } from '../commons/modalStore'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import Toast from '../commons/Toast'
-import { getStudent, getUserSession, logoutUser } from '../api'
+import { changeLecMajor, getStudent, getUserSession, logoutUser } from '../api'
+import axios from 'axios'
 
 export const Overlay = styled.div`
   display: ${({ isOpen }) => (isOpen ? 'block' : 'none')};
@@ -18,6 +20,7 @@ export const Overlay = styled.div`
   background: rgba(0,0,0,0.3);
   z-index: 900;
 `
+
 
 const Container = styled.div`
   font-size: 1rem;
@@ -48,11 +51,11 @@ const Container = styled.div`
 `
 
 const UserImage = styled.img`
-  margin-left: 20px;
+  margin-left: 30px;
   margin-top: 5px;
   width: 59px;
   height: 59px;
-  border-radius: 50%;
+   border-radius: 50%;
   object-fit: cover;
 `
 
@@ -82,6 +85,7 @@ export const Hr = styled.hr`
 
 const Select = styled.select`
   border: 2px solid #2ec4b6;
+
   &:focus {
     border-color: #2ec4b6;
   }
@@ -107,13 +111,12 @@ const P = styled.p`
 `
 const MypageIcon = styled.i`
   display: inline-block; 
-  width: 12px; 
+  width: 12px; /* 이미지 크기 조절 */ 
   height: 12px; 
   background-image: url(${mypage}); 
   background-size: contain;
   background-repeat: no-repeat; 
 `
-
 export const Nonebutton = styled.button`
   border: none;
   background: none;
@@ -121,7 +124,9 @@ export const Nonebutton = styled.button`
 export const StyledLink = styled(Link)`
   text-decoration: none;
   color: #212121;
+  
 `
+
 
 export const Submenu = styled.ul`
   max-height: ${({ open }) => (open ? "500px" : "0")};
@@ -135,33 +140,32 @@ function SideMenu() {
   const [lectureHover, setLectureHover] = useState(false)
   const [projectHover, setProjectHover] = useState(false)
   const [postHover, setPostHover] = useState(false)
+  const { showModal } = useMypageModalStore();
   const { isOpen, closeMenu } = useSideMenuStore();
   const logout = useAuthStore(state => state.logout);
   const [toastMsg, setToastMsg] = useState("");
-
-  // ✅ user를 state로 관리
-  const [user, setUser] = useState(getUserSession());
-
+  const user = getUserSession();
   const [studentData, setStudentData] = useState(null);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
   const query = new URLSearchParams(location.search);
   const memId = query.get('memId');
   const navigate = useNavigate();
-  const { lecId: lecIdFromPath } = useParams();   
-  const [selectedLecId, setSelectedLecId] = useState(''); 
-  const currentLecId = selectedLecId || lecIdFromPath || ''; 
-  const { showModal } = useMypageModalStore();
+  const [selectedLecId, setSelectedLecId] = useState('');
+  const { lecId: lecIdFromPath } = useParams();
+  const currentLecId = selectedLecId || lecIdFromPath || '';
+  const [attUser, setAttUser] = useState(getUserSession());
 
   const handleLectureChange = (e) => {
     const lecId = e.target.value;
-    setSelectedLecId(lecId);  
+    setSelectedLecId(lecId);
+    navigate(`?memId=${memId}&lec_id=${lecId}`);
+
   };
 
-  // ✅ userUpdated 이벤트 구독
   useEffect(() => {
     const updateUser = () => {
-      setUser(getUserSession()); // 세션에서 다시 불러옴
+      setAttUser(getUserSession()); // 세션에서 다시 불러옴
     };
     window.addEventListener("userUpdated", updateUser);
     return () => window.removeEventListener("userUpdated", updateUser);
@@ -173,21 +177,27 @@ function SideMenu() {
     }
   }, [memId]);
 
+  useEffect(() => {
+    if (memId) {
+      getStudentData(memId);
+    }
+  }, [memId]);
   async function getStudentData(memId) {
-    try{
+    try {
       const response = await getStudent(memId);
       setStudentData(response.data);
-      setLoading(false); 
+      setLoading(false);
+      console.log(response.data)
+      return response.data;
     } catch (err) {
       console.error(err);
       setLoading(false);
     }
   };
-
   const handleLogout = async () => {
     try {
-      await logoutUser(); 
-      logout(); 
+      await logoutUser(); // 서버 세션 삭제
+      logout(); // Zustand 상태 초기화
       sessionStorage.removeItem('user');
       setToastMsg('로그아웃 완료!');
     } catch (err) {
@@ -196,25 +206,19 @@ function SideMenu() {
     }
   };
 
-  if (!user) return null;
+  if (!attUser) return null;
 
   return (
     <>
       <Overlay isOpen={isOpen} onClick={closeMenu} />
-      <Container  $isOpen={isOpen}>
+      <Container $isOpen={isOpen}>
         <div style={{ display: 'flex' }}>
-          <Profile 
-            style={{ 
-              display: "flex", 
-              alignItems: "center", 
-              marginTop: "25px",
-              cursor: "pointer" 
-            }}
-            onClick={() => showModal()}
+          <Profile
+            style={{ display: "flex", alignItems: "center", marginTop: "25px", cursor: "pointer" }} onClick={() => showModal()}
           >
-            <UserImage 
-              src={`/api/member/getPicture?memId=${user.mem_id}&v=${Date.now()}`} 
-              alt="프로필" 
+            <UserImage
+              src={`/api/member/getPicture?memId=${user.mem_id}&v=${Date.now()}`}
+              alt="프로필"
             />
             <div style={{ marginLeft: "12px" }}>
               <div style={{ display: "flex", alignItems: "center" }}>
@@ -227,35 +231,30 @@ function SideMenu() {
             </div>
           </Profile>
 
-          {/* 로그아웃 버튼 */}
-          <Button 
-            style={{ marginTop: '47px', fontSize: "13px" }} 
-            onClick={()=> {handleLogout(); closeMenu();}}
-          >
-            로그아웃
-          </Button>
+          <Button style={{ marginTop: '47px', fontSize: "13px" }} onClick={() => { handleLogout(); closeMenu(); }}>로그아웃</Button>
         </div>
 
-        <Hr style={{ width: '290px', marginTop:'22px' }} />
+        <Hr style={{ width: '290px', marginTop: '22px' }} />
 
-        {/* 이하 기존 메뉴들 */}
         <ul className="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="true">
+
           {/* HOME */}
           <StyledLink to='/'>
             <li className="nav-item" style={{ display: "flex", alignItems: "center", padding: '5px 15px' }}
-              onClick={() => {setActiveMenu("home"); setHomeHover(false); closeMenu();}}
+              onClick={() => { setActiveMenu("home"); setHomeHover(false); closeMenu(); }}
+
             >
               <Icon defaultImg={home} hoverImg={homehv} hover={homeHover || activeMenu === "home"} style={{ marginLeft: '20px', marginRight: "10px" }} />
               <P hover={homeHover || activeMenu === "home"}>&nbsp;&nbsp;HOME</P>
             </li>
           </StyledLink>
-
           {/* 강의실 */}
           <li className="nav-item" style={{ marginTop: '15px' }}>
             <div
               className="nav-link"
               style={{ display: "flex", alignItems: "center", cursor: "pointer" }}
-              onClick={() => {setActiveMenu(activeMenu === "lecture" ? null : "lecture"); setLectureHover(false);}}
+
+              onClick={() => { setActiveMenu(activeMenu === "lecture" ? null : "lecture"); setLectureHover(false); }}
             >
               <Icon
                 defaultImg={lecture}
@@ -272,7 +271,7 @@ function SideMenu() {
               </P>
             </div>
 
-            {/* 하위 메뉴 */}
+            {/* 하위 메뉴 토글 */}
             <Submenu open={activeMenu === "lecture"}>
               <div className="row">
                 <div className="col-sm-2"></div>
@@ -282,21 +281,20 @@ function SideMenu() {
                       className="custom-select my-border"
                       style={{ marginLeft: '70px', width: '70%' }}
                       onChange={handleLectureChange}
-                      value={currentLecId || ''} 
                     >
                       <option value="">전공을 선택하세요.</option>
                       {!loading &&
-                        (user.mem_auth === 'ROLE01'
+                        (user.mem_auth === 'ROLE01' // 학생이면
                           ? studentData?.stulectureList?.map((lec) => (
-                              <option key={lec.lec_id} value={lec.lec_id}>
-                                {lec.lec_name}
-                              </option>
-                            ))
-                          : studentData?.prolectureList?.map((lec) => (
-                              <option key={lec.lec_id} value={lec.lec_id}>
-                                {lec.lec_name}
-                              </option>
-                            ))
+                            <option key={lec.lec_id} value={lec.lec_id}>
+                              {lec.lec_name}
+                            </option>
+                          ))
+                          : studentData?.prolectureList?.map((lec) => ( // 교수면
+                            <option key={lec.lec_id} value={lec.lec_id}>
+                              {lec.lec_name}
+                            </option>
+                          ))
                         )
                       }
                     </Select>
@@ -304,32 +302,31 @@ function SideMenu() {
                 </div>
               </div>
 
-              <StyledLink to={currentLecId ? `/plan?memId=${memId}&lec_id=${currentLecId}` : '#'} onClick={closeMenu}>
+              <StyledLink to={`/plan?memId=${encodeURIComponent(memId)}&lecId=${encodeURIComponent(selectedLecId || '')}`} onClick={closeMenu}>
                 <li className="nav-item"><p style={{ marginLeft: '80px' }}>강의계획서</p></li>
               </StyledLink>
-              <StyledLink to={currentLecId ? `/notice?memId=${memId}&lec_id=${currentLecId}` : '#'} onClick={closeMenu}>
-                <li className="nav-item"><p style={{ marginLeft: '80px' }}>공지사항</p></li>
+              <StyledLink
+                to={`/notice?memId=${encodeURIComponent(memId)}&lecId=${encodeURIComponent(selectedLecId || '')}`}
+                onClick={closeMenu}
+              >
+                <li className="nav-item"><p style={{ marginLeft: 80 }}>공지사항</p></li>
               </StyledLink>
               <StyledLink to='/JAVA101/online' onClick={closeMenu}>
                 <li className="nav-item"><p style={{ marginLeft: '80px' }}>실시간 강의</p></li>
               </StyledLink>
-              <StyledLink to={currentLecId ? `/online?memId=${memId}&lec_id=${currentLecId}` : '#'} onClick={closeMenu}>
+              <StyledLink to={`/online?memId=${encodeURIComponent(memId)}&lec_id=${encodeURIComponent(selectedLecId || '')}`} onClick={closeMenu}>
                 <li className="nav-item"><p style={{ marginLeft: '80px' }}>온라인 강의</p></li>
               </StyledLink>
-              <StyledLink 
-                to={
-                  user.mem_auth === 'ROLE02'  // ROLE02 = 교수
-                    ? `/attendance/professor`
-                    : `/attendance/student`
-                }
-                onClick={closeMenu}
-              >
+              <StyledLink to={user.mem_auth === 'ROLE02'
+                ? `/attendance/professor?memId=${encodeURIComponent(memId)}&lecId=${encodeURIComponent(selectedLecId || '')}`
+                : `/attendance/student?memId=${encodeURIComponent(memId)}&lecId=${encodeURIComponent(selectedLecId || '')}`
+              } onClick={closeMenu} >
                 <li className="nav-item"><p style={{ marginLeft: '80px' }}>출결</p></li>
               </StyledLink>
-              <StyledLink to={currentLecId ? `/homework?memId=${memId}&lec_id=${currentLecId}` : '#'} onClick={closeMenu}>
+              <StyledLink to={`/homework?memId=${encodeURIComponent(memId)}&lecId=${encodeURIComponent(selectedLecId || '')}`} onClick={closeMenu}>
                 <li className="nav-item"><p style={{ marginLeft: '80px' }}>과제제출</p></li>
               </StyledLink>
-              <StyledLink to={currentLecId ? `/${currentLecId}/pds` : '#'} onClick={closeMenu}>
+              <StyledLink to='/pds' onClick={closeMenu}>
                 <li className="nav-item"><p style={{ marginLeft: '80px' }}>자료실</p></li>
               </StyledLink>
             </Submenu>
@@ -358,23 +355,26 @@ function SideMenu() {
             </div>
 
             <Submenu open={activeMenu === "project"}>
-              <StyledLink to='/project/team' onClick={closeMenu}>
-                <li className="nav-item"><p style={{ marginLeft: '80px', marginTop: '15px'}}>팀 목록</p></li>
+              <StyledLink to={`/project/team?memId=${user.mem_id}`} onClick={closeMenu}>
+                <li className="nav-item"><p style={{ marginLeft: '80px', marginTop: '15px' }}>팀 목록</p></li>
               </StyledLink>
-              <StyledLink to='/project/object' onClick={closeMenu}>
-                <li className="nav-item"><p style={{ marginLeft: '80px', marginTop: '15px'}}>결과물</p></li>
+              <StyledLink to={`/project/object?memId=${user.mem_id}`} onClick={closeMenu}>
+                <li className="nav-item"><p style={{ marginLeft: '80px', marginTop: '15px' }}>결과물</p></li>
               </StyledLink>
             </Submenu>
           </li>
 
           {/* 게시판 */}
-          <li className="nav-item" style={{marginTop: '10px'}}>
-            <a href="#" className="nav-link" style={{ display: "flex", alignItems: "center" }}
-              onClick={() => setActiveMenu("post")}
+          <li className="nav-item" style={{ marginTop: 10 }}>
+            <StyledLink
+              to={`/board?memId=${user.mem_id}`}
+              onClick={() => { setActiveMenu("post"); closeMenu(); }}
             >
-              <Icon defaultImg={post} hoverImg={posthv} hover={postHover || activeMenu === "post"}  style={{ marginLeft: '20px', marginRight: "10px" }} />
-              <P hover={postHover || activeMenu === "post"}>&nbsp;&nbsp;게시판</P>
-            </a>
+              <div className="nav-link" style={{ display: "flex", alignItems: "center" }}>
+                <Icon defaultImg={post} hoverImg={posthv} hover={postHover || activeMenu === "post"} style={{ marginLeft: 20, marginRight: 10 }} />
+                <P hover={postHover || activeMenu === "post"}>&nbsp;&nbsp;게시판</P>
+              </div>
+            </StyledLink>
           </li>
         </ul>
       </Container>
@@ -383,4 +383,4 @@ function SideMenu() {
   )
 }
 
-export default SideMenu
+export default SideMenu 

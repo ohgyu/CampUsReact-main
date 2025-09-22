@@ -1,275 +1,339 @@
-import React, { useRef, useState, forwardRef } from "react";
+import React, { useRef, useState, forwardRef, useEffect } from "react";
 import styled from "styled-components";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { Cancle, calender, searchbtn, radioCheck } from "../img";
+import { useProjectTeamModifyCheckModalStore } from "../commons/modalStore";
+import { getModifyCheck, modifyProjectTeamCheck } from "../api";
+import { Overlay } from "../proObject/ProjectObjectFeedback";
 
-import { Cancle, searchIcon, calender, radioCheck, searchbtn } from "../img";
-import { Container } from "../topNav/TopNav";
-import { Button } from "../commons/WHComponent";
-
+// ------------------ 스타일 ------------------
 const Page = styled.div`
   width: 412px;
   margin: 0 auto;
-  overflow-x: hidden;
   font-family: 'Noto Sans KR','Noto Sans',sans-serif;
 `;
 
-const TopBar = styled.div`
-  height: 56px;
+const Container = styled.div`
   display: flex;
+  justify-content: space-between;
   align-items: center;
   padding: 0 16px;
-  box-sizing: border-box;
-  gap: 16px;
-`;
-
-const CloseArea = styled.div`
-  width: 54px;
-  height: 45px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const CloseBtn = styled.button`
-  width: 28px; height: 28px; padding: 0; border: 0;
-  background: url(${Cancle}) center / 24px 24px no-repeat transparent;
-  cursor: pointer; font-size: 0; color: transparent;
-  margin-top: 15px;
-`;
-
-const Spacer = styled.div` flex: 1; `;
-const RightButtons = styled.div`
-  display: flex; align-items: center; gap: 6px;
-`;
-
-const MutedBtn = styled.button`
-  width: 48px; height: 26px;
-  background: #AAAAAA; color: #fff; border: 0; border-radius: 5px;
-  font-weight: 500; cursor: pointer; margin-right: 8px;
-`;
-
-const ApproveBtn = styled.button`
-  width: 48px; height: 26px;
-  background: #2EC4B6; color: #fff; border: 0; border-radius: 5px;
-  font-weight: 500; cursor: pointer;
-`;
-
-const Section = styled.div`
+  height: 56px;
   background: #fff;
   box-sizing: border-box;
 `;
-const TopSection = styled(Section)` `;
-const BottomSection = styled(Section)` height: 265px; margin-top: 20px;`;
-const SectionInner = styled.div`
-  padding: 24px;
-  height: 100%;
-  box-sizing: border-box;
-  margin-top: -20px;
-`;
-const Gap = styled.div` height: 12px; background: #f3f3f3; `;
 
-const Row = styled.div`
-  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
-`;
-const Label = styled.div`
-  width: 72px; font-size: 13px; font-weight: 600; color: #3b3b3b;
+const ExitButton = styled.button`
+  width: 28px;
+  height: 28px;
+  background: url(${Cancle}) center / 24px 24px no-repeat transparent;
+  border: none;
+  cursor: pointer;
 `;
 
-const Input = styled.input`
-  flex: 1; height: 34px;
-  border: 1px solid #d6d6d6; border-radius: 5px;
-  padding: 0 10px; font-size: 13px; color: #333; outline: none;
-  ::placeholder { color: #bdbdbd; }
+const Button = styled.button`
+  padding: 4px 12px;
+  border-radius: 5px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  background-color: ${({ bg }) => bg || "#2EC4B6"};
+  color: #fff;
+  margin-left: ${({ ml }) => ml || "0"};
 `;
 
-const DateGrid = styled.div`
-  display: grid;
-  grid-template-columns: 72px minmax(0, 1fr);
-  column-gap: 8px;
+const Section = styled.div` background: #fff; `;
+const SectionInner = styled.div` padding: 16px; box-sizing: border-box; `;
+const Row = styled.div` display: flex; align-items: center; gap: 8px; margin-bottom: 10px; `;
+const Label = styled.div` width: 72px; font-size: 13px; font-weight: 600; color: #3b3b3b; `;
+
+const EditBox = styled.div`
+  flex: 1;
+  border: 1px solid #CED4DA;
+  border-radius: 5px;
+  background-color: #E9ECEF;
+  height: 34px;
+  display: flex;
   align-items: center;
-  margin-bottom: 10px;
+  padding: 0 8px;
 `;
 
-const DPWrap = styled.div`
-  position: relative;
-  min-width: 0;
-  .react-datepicker-wrapper,
-  .react-datepicker__input-container { width: 100%; min-width: 0; }
+const BeforeText = styled.span`
+  color: #B7B7B7;
+  text-decoration: line-through;
+  margin-right: 10px;
+  font-size: 13px;
 `;
 
-const DateField = styled.input`
-  width: 230px;; height: 34px;
-  border: 1px solid #d6d6d6; border-radius: 5px;
-  padding: 0 40px 0 10px; 
-  font-size: 13px; color: #333;
-  background: #fff; outline: none; cursor: pointer;
-`;
-
-
-const CalendarIconBtn = styled.button`
-  position: absolute;
-  top: 50%;
-  right: 8px;
-  transform: translateY(-50%);
-  width: 24px; height: 24px;
-  border: 0; padding: 0;
-  background: transparent url(${calender}) center / 18px 18px no-repeat;
-  cursor: pointer;
-`;
-
-const Radios = styled.div`
-  display: flex; align-items: center; gap: 16px; font-size: 13px; color: #333;
-`;
-const RadioLabel = styled.label`
-  display: flex; align-items: center; gap: 6px; cursor: pointer;
-`;
-const RadioButton = styled.input.attrs({ type: "radio" })` display: none; `;
-const RadioMark = styled.span`
-  width: 13px; height: 13px; cursor: pointer;
-  border: 1px solid #bbb; border-radius: 8px; background-color: #fff;
-  display: inline-block; margin-top: 2px;
-  ${RadioButton}:checked + & {
-    background-image: url(${radioCheck});
-    background-size: 65%; background-repeat: no-repeat; background-position: center;
-  }
-`;
-
-const SearchBtn = styled.button`
-  width: 34px; height: 34px; border: 0; padding: 0;
-  background: url(${searchbtn}) center / 100% 100% no-repeat transparent;
-  cursor: pointer;
-`;
-
-const Divider = styled.div`
-  height: 1px; background: #e5e5e5; margin: 8px 0 12px;
+const AfterText = styled.span`
+  font-size: 13px;
+  color: #333;
 `;
 
 const BodyText = styled.textarea`
   width: 100%;
   height: ${({ h }) => h}px;
-  border: 0; padding: 0; resize: none; outline: none;
+  border: 0; resize: none; outline: none;
   font-size: 13px; color: #606060; background: transparent;
 `;
-
+const TestDiv = styled.div`
+  width: 100%;
+  border: 0; resize: none; outline: none;
+  font-size: 13px; color: #606060; background: transparent;
+  border: 1px solid #bdbdbd;
+  border-radius: 5px;
+  height: 80px;
+  background-color: #e9ecef;
+  padding: 5px 10px;
+;
+`
 const SubHeader = styled.div`
   font-size: 14px; font-weight: 600; color: #444;
   padding-bottom: 8px; border-bottom: 2px solid #2EC4B6;
 `;
+
+const Gap = styled.div` height: 12px; background: #f3f3f3; `;
 const BottomLine = styled.div` height: 1px; background: #e5e5e5; margin-top: 14px; `;
 
 const DPInput = forwardRef(({ value, onClick, placeholder }, ref) => (
-  <DateField
+  <input
     ref={ref}
-    onClick={onClick}
     value={value || ""}
+    onClick={onClick}
     placeholder={placeholder || "YYYY-MM-DD"}
     readOnly
+    style={{
+      width: "100%",
+      height: "34px",
+      border: "1px solid #d6d6d6",
+      borderRadius: "5px",
+      padding: "0 10px",
+      fontSize: "13px",
+      color: "#333",
+      background: "#fff",
+      cursor: "pointer",
+    }}
   />
 ));
+const formatMembers = (members) => {
+  if (!members) return "";
+  if (Array.isArray(members)) return members.join(', ');
+  return members; // 이미 문자열이면 그대로 반환
+};
+// ------------------ 유틸 ------------------
+const formatDate = (d) => d ? new Date(d).toISOString().slice(0,10) : '';
+const stripHtmlTags = (html) => html?.replace(/<\/?[^>]+(>|$)/g, "") || "";
+// ------------------ 컴포넌트 ------------------
+// ...import, styled 정의는 그대로
 
 export default function ProjectTeamModifyCheck() {
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate,   setEndDate]   = useState(new Date());
-  const startRef = useRef(null);
-  const endRef   = useRef(null);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [projectData, setProjectData] = useState(null);
+  const [editList, setEditList] = useState([]);
+
+  const { visible, hideModal, project_id } = useProjectTeamModifyCheckModalStore();
+
+  const fetchModifyCheck = async (project_id) => {
+    try {
+      const res = await getModifyCheck(project_id);
+      const { projectList, editList } = res.data;
+      const project = projectList?.[0] || null;
+      setProjectData(project);
+      setEditList(editList || []);
+      if (project) {
+        setStartDate(project.project_stdate ? new Date(project.project_stdate) : null);
+        setEndDate(project.project_endate ? new Date(project.project_endate) : null);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+ const handleApprove = async () => {
+  if (!projectData || !edit) return;
+  setLoading(true);
+
+  try {
+    // team_member_ids 문자열 → 배열 처리
+    const teamMemberIds = edit.team_member_ids.split(',').map(id => id.trim());
+
+// 문자열로 합치지 말고 개별 ID 그대로 배열 유지
+const payload = {
+  project: {
+    ...projectData,
+    ...edit,
+    team_id: edit.team_id || projectData.team_id,
+  },
+  team: {
+    ...projectData.team,
+    ...(edit.team || {}),
+    team_id: edit.team_id || projectData.team?.team_id,
+    team_leader: edit.team_leader || projectData.team_leader,
+  },
+  team_member_ids: teamMemberIds, // 배열 그대로
+  before_id: edit.before_id,
+};
+
+    console.log("승인 요청 payload:", payload);
+
+    const res = await modifyProjectTeamCheck(payload);
+    if (res.data.status === "success") {
+      alert("프로젝트 수정 승인 완료");
+      if (typeof window.refreshProjectTeamList === "function") {
+        window.refreshProjectTeamList();
+      }
+      hideModal();
+    }
+  } catch (err) {
+    console.error("승인 처리 실패:", err);
+    alert("승인 처리 실패");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
+
+
+  const handleReject = async () => {
+    if (!editList?.length) return;
+    setLoading(true);
+    try {
+      const edit = editList[0];
+      await modifyProjectTeamCheck({
+        project: null,
+        team: null,
+        team_member_ids: [],
+        before_id: edit.before_id
+      });
+      alert("수정 거부 완료");
+      hideModal();
+    } catch (err) {
+      console.error(err);
+      alert("거부 처리 실패");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (visible && project_id) fetchModifyCheck(project_id);
+  }, [visible, project_id]);
+
+  if (!visible) return null;
+
+  const edit = editList?.[0] || {};
 
   return (
-    <Page>
-      <Container style={{backgroundColor:'#fff',display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-        <img src={Cancle} style={{width:'19px', height:'19px', cursor:'pointer'}} alt="close" />
-        <Button style={{backgroundColor:'#aaa', marginRight:'-200px'}}>거부</Button>
-        <Button>승인</Button>
-      </Container>
+    <Overlay>
+      <Page>
+        <Container>
+          <ExitButton onClick={hideModal} style={{ marginTop: '10px' }} />
+          <div style={{ display: "flex", marginTop: '10px' }}>
+            <Button bg="#aaa" onClick={handleReject} disabled={loading}>거부</Button>
+            <Button ml="8px" onClick={handleApprove} disabled={loading}>승인</Button>
+          </div>
+        </Container>
 
-      <TopSection>
-        <SectionInner>
-          <Row>
-            <Label>프로젝트명</Label>
-            <Input defaultValue="클라우드 기반 협업 플랫폼" />
-          </Row>
+        <Section>
+          <SectionInner>
+            {/* 프로젝트명 */}
+            <Row>
+              <Label>프로젝트명</Label>
+              <EditBox>
+                {edit.project_name !== projectData?.project_name && (
+                  <BeforeText>{projectData?.project_name}</BeforeText>
+                )}
+                <AfterText>{edit.project_name || projectData?.project_name}</AfterText>
+              </EditBox>
+            </Row>
 
-          <DateGrid>
-            <Label>시작일</Label>
-            <DPWrap>
-              <DatePicker
-                selected={startDate}
-                onChange={setStartDate}
-                dateFormat="yyyy-MM-dd"
-                customInput={<DPInput ref={startRef} />}
-              />
-              <CalendarIconBtn
-                aria-label="시작일 달력 열기"
-                onClick={() => startRef.current?.setFocus()}
-              />
-            </DPWrap>
-          </DateGrid>
+            {/* 시작일 */}
+            <Row>
+              <Label>시작일</Label>
+              <EditBox>
+                {formatDate(edit.project_stdate) !== formatDate(projectData?.project_stdate) && (
+                  <BeforeText>{formatDate(projectData?.project_stdate)}</BeforeText>
+                )}
+                <AfterText>{formatDate(edit.project_stdate) || formatDate(projectData?.project_stdate)}</AfterText>
+              </EditBox>
+            </Row>
 
-          {/* 종료일 */}
-          <DateGrid>
-            <Label>종료일</Label>
-            <DPWrap>
-              <DatePicker
-                selected={endDate}
-                onChange={setEndDate}
-                dateFormat="yyyy-MM-dd"
-                customInput={<DPInput ref={endRef} />}
-              />
-              <CalendarIconBtn
-                aria-label="종료일 달력 열기"
-                onClick={() => endRef.current?.setFocus()}
-              />
-            </DPWrap>
-          </DateGrid>
+            {/* 마감일 */}
+            <Row>
+              <Label>마감일</Label>
+              <EditBox>
+                {formatDate(edit.project_endate) !== formatDate(projectData?.project_endate) && (
+                  <BeforeText>{formatDate(projectData?.project_endate)}</BeforeText>
+                )}
+                <AfterText>{formatDate(edit.project_endate) || formatDate(projectData?.project_endate)}</AfterText>
+              </EditBox>
+            </Row>
 
-          <Row>
-            <Label>학기</Label>
-            <Radios>
-              <RadioLabel>
-                <RadioButton name="term" defaultChecked />
-                <RadioMark />
-                <span>1학기</span>
-              </RadioLabel>
-              <RadioLabel>
-                <RadioButton name="term" />
-                <RadioMark />
-                <span>2학기</span>
-              </RadioLabel>
-            </Radios>
-          </Row>
+            {/* 학기 */}
+            <Row>
+              <Label>학기</Label>
+              <EditBox>
+                {edit.samester !== projectData?.samester && (
+                  <BeforeText>{projectData?.samester}</BeforeText>
+                )}
+                <AfterText>{edit.samester || projectData?.samester}</AfterText>
+              </EditBox>
+            </Row>
 
-          <Row>
-            <Label>담당교수</Label>
-            <Input defaultValue="서형원" />
-          </Row>
+            {/* 담당교수 */}
+            <Row>
+              <Label>담당교수</Label>
+              <EditBox>
+                <AfterText>{projectData?.profes_name}</AfterText>
+              </EditBox>
+            </Row>
 
-          <Row>
-            <Label>팀장</Label>
-            <Input defaultValue="김원희" />
-            <SearchBtn aria-label="팀장 검색" />
-          </Row>
+            {/* 팀장 */}
+            <Row>
+              <Label>팀장</Label>
+              <EditBox>
+                {edit.leader_name !== projectData?.leader_name && (
+                  <BeforeText>{projectData?.leader_name}</BeforeText>
+                )}
+                <AfterText>{edit.leader_name || projectData?.leader_name}</AfterText>
+              </EditBox>
+            </Row>
 
-          <Row>
-            <Label>팀원</Label>
-            <Input defaultValue="권오규, 김민주, 김선범" />
-            <SearchBtn aria-label="팀원 검색" />
-          </Row>
+            {/* 팀원 */}
+            <Row>
+              <Label>팀원</Label>
+              <EditBox>
+                {formatMembers(edit.team_member_names) !== projectData?.mem_name?.join(', ') && (
+                  <BeforeText>{formatMembers(projectData?.mem_name)}</BeforeText>
+                )}
+                <AfterText>{formatMembers(edit.team_member_names) || formatMembers(projectData?.mem_name)}</AfterText>
+              </EditBox>
+            </Row>
 
-          <Label>내용</Label>
-          <Divider />
-          <BodyText h={112} defaultValue="내용입니다." />
-        </SectionInner>
-      </TopSection>
+            {/* 내용 */}
+            <Label>내용</Label>
+            <TestDiv>
+              <BeforeText>{stripHtmlTags(projectData?.project_desc)}</BeforeText>
+              <AfterText></AfterText>
+            </TestDiv>
+          </SectionInner>
+        </Section>
 
-      <Gap />
+        <Gap />
 
-      <BottomSection>
-        <SectionInner>
-          <SubHeader>수정 사유</SubHeader>
-          <BodyText style={{marginTop:'10px'}} h={149} defaultValue="일정 변경 요청합니다." />
-          <BottomLine />
-        </SectionInner>
-      </BottomSection>
-    </Page>
+        <Section>
+          <SectionInner>
+            <SubHeader>수정 사유</SubHeader>
+            <BodyText h={149} value={edit.edit_content || ''} readOnly />
+            <BottomLine />
+          </SectionInner>
+        </Section>
+      </Page>
+    </Overlay>
   );
 }

@@ -3,6 +3,10 @@ import styled from "styled-components";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { clip } from "../img";
+import ConfirmModal from "../commons/ConfirmModal";
+import { FlexDiv } from "../commons/WHComponent";
+import { useToastStore } from "../commons/modalStore";
+
 
 /* ============ style ============ */
 const MobileShell = styled.div`
@@ -224,6 +228,7 @@ export default function LectureHomeworkDetail() {
   const [existingFileName, setExistingFileName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [editing, setEditing] = useState(false);
+  const { showToast } = useToastStore();
 
   const user = (() => {
     try { return JSON.parse(sessionStorage.getItem("user") || "null"); }
@@ -246,8 +251,10 @@ export default function LectureHomeworkDetail() {
 
   // 제출/수정
   const onSubmit = async () => {
-    if (!comment.trim()) return alert("내용을 입력해주세요.");
-    if (!homework?.hwNo) return alert("과제 정보가 없습니다.");
+    if (!comment.trim())
+      return showToast("내용을 입력해주세요.");
+    if (!homework?.hwNo)
+      return showToast("과제 정보가 없습니다.");
 
     const fd = new FormData();
     fd.append("hwNo", homework.hwNo);
@@ -267,142 +274,131 @@ export default function LectureHomeworkDetail() {
       setFile(null);
       setExistingFileName("");
       setEditing(false);
-      alert(editing ? "과제가 수정되었습니다." : "과제가 제출되었습니다.");
+      showToast(editing ? "과제가 수정되었습니다." : "과제가 제출되었습니다.");
     } catch (e) {
       console.error(e);
-      alert("제출 중 오류가 발생했습니다.");
+      showToast("제출 중 오류가 발생했습니다.");
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <MobileShell>
-      <div style={{ padding: "5px 20px 24px", backgroundColor: "#fff" }}>
-        <TopBar>
-          <PageTitle>과제제출</PageTitle>
-          <TopActions>
-            {isProfessor && (
-              <ModifyBtn type="button">수정</ModifyBtn>
-            )}
-          </TopActions>
-        </TopBar>
-        <PageDivider />
-        <Card>
-          <CardTitle>{homework?.hwName}</CardTitle>
-          <CardMeta>
-            {fmtDate(homework?.hwStartDate)} ~ {fmtDate(homework?.hwEndDate)}
-          </CardMeta>
-          <CardHr />
-          <AssignBody>{stripHtml(homework?.hwDesc)}</AssignBody>
-          <CardHr />
-          <CardFooter>
-            {isSubmitted && <Button type="button" onClick={() => navigate(-1)}>목록</Button>}
-          </CardFooter>
-        </Card>
-      </div>
-
-      {/* 제출 정보 */}
-      {isSubmitted && !editing ? (
-        <div style={{ padding: "1px 20px 24px", backgroundColor: "#fff", marginTop: "20px" }}>
+    <div>
+      <MobileShell>
+        <div style={{ padding: "5px 20px 24px", backgroundColor: "#fff" }}>
+          <TopBar>
+            <PageTitle onClick={() => navigate(-1)}>과제제출</PageTitle>
+            <TopActions>
+              {isProfessor && (
+                <ModifyBtn type="button">수정</ModifyBtn>
+              )}
+            </TopActions>
+          </TopBar>
           <PageDivider />
           <Card>
-            <SubmissionHead>
-              <SubmissionAuthor>{stuId}</SubmissionAuthor>
-              <Meta>ㅣ</Meta>
-              <SubmissionTime>제출 시간 : {fmtDate(submit.submittedAt)}</SubmissionTime>
-              <SubmissionActions>
-                <ChipBrand
-                  onClick={() => {
-                    setComment(submit.hwsubComment || "");
-                    setExistingFileName(submit.hwsubFilename || "");
-                    setFile(null);
-                    setEditing(true);
-                  }}
-                >
-                  수정
-                </ChipBrand>
-              </SubmissionActions>
-            </SubmissionHead>
-            <SubmissionText>{stripHtml(submit?.hwsubComment)}</SubmissionText>
+            <CardTitle>{homework?.hwName}</CardTitle>
+            <CardMeta>
+              {fmtDate(homework?.hwStartDate)} ~ {fmtDate(homework?.hwEndDate)}
+            </CardMeta>
             <CardHr />
-            {submit?.hwsubFilename && (
-              <Attachment>
-                <AttachmentIcon src={clip} />
-                <AttachmentName>{submit.hwsubFilename}</AttachmentName>
-              </Attachment>
-            )}
+            <AssignBody>{stripHtml(homework?.hwDesc)}</AssignBody>
+            <CardHr />
+            <CardFooter>
+              <Button type="button" onClick={() => navigate(-1)}>목록</Button>
+            </CardFooter>
           </Card>
         </div>
-      ) : (
-        <div style={{ padding: "1px 20px 24px", backgroundColor: "#fff", marginTop: "20px" }}>
-          <PageDivider />
-          <Card style={{ padding: 12 }}>
-            <div style={{ fontWeight: 700, marginBottom: 10 }}>
-              {editing ? "과제 수정" : "과제 제출"}
-            </div>
-            <div style={{ marginBottom: 10 }}>
-              <label style={{ fontSize: 12, color: "#98a1a8" }}>내용</label>
-              <textarea
-                rows={6}
-                style={{
-                  width: "100%",
-                  resize: "vertical",
-                  padding: 8,
-                  borderRadius: 8,
-                  border: "1px solid #e3e7ec",
-                }}
-                placeholder="내용을 입력하세요"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-              />
-            </div>
-            <div style={{ marginBottom: 14 }}>
-              <label className="btn btn-outline-secondary" style={{ cursor: "pointer" }}>
-                파일 선택
-                <input
-                  type="file"
-                  hidden
-                  onChange={(e) => setFile(e.target.files?.[0] || null)}
-                />
-              </label>
-              <span style={{ marginLeft: 8 }}>
-                {file ? file.name : existingFileName ? existingFileName : "(첨부 없음)"}
-              </span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-              <PrimaryButton type="button" onClick={onSubmit} disabled={submitting}>
-                {submitting ? (editing ? "수정 중..." : "제출 중...") : (editing ? "수정" : "제출")}
-              </PrimaryButton>
-            </div>
-          </Card>
-        </div>
-      )}
 
-      {/* 교수 피드백 */}
-      {submit?.hwsubFeedback && (
-        <div style={{ backgroundColor: "#fff", marginTop: "20px", padding: "0px 20px 24px" }}>
-          <SectionTitle>피드백</SectionTitle>
-          <SectionDivider />
-          <Card>
-            <FeedbackHead>
-              <Avatar>
-                {submit.professorPicPath ? (
-                  <img
-                    src={`/member/picture/upload/${submit.professorPicPath}`}
-                    alt="교수 사진"
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  />
-                ) : (
-                  <span>교</span>
-                )}
-              </Avatar>
-              <FeedbackName>{submit.professorName || "교수"}</FeedbackName>
-            </FeedbackHead>
-            <FeedbackText>{submit.hwsubFeedback}</FeedbackText>
-          </Card>
-        </div>
-      )}
-    </MobileShell>
+        {/* 제출 정보 */}
+        {isSubmitted && !editing ? (
+          <div style={{ padding: "1px 20px 24px", backgroundColor: "#fff", marginTop: "20px" }}>
+            <PageDivider />
+            <Card>
+              <SubmissionHead>
+                <SubmissionAuthor>{stuId}</SubmissionAuthor>
+                <Meta>ㅣ</Meta>
+                <SubmissionTime>제출 시간 : {fmtDate(submit.submittedAt)}</SubmissionTime>
+                <SubmissionActions>
+                  {!submit?.hwsubFeedback ? (
+                  <ChipBrand onClick={() => { setComment(submit.hwsubComment || ""); setExistingFileName(submit.hwsubFilename || ""); setFile(null); setEditing(true); }} >
+                    수정
+                  </ChipBrand>
+                  ) : (null)}
+                </SubmissionActions>
+              </SubmissionHead>
+              <SubmissionText>{stripHtml(submit?.hwsubComment)}</SubmissionText>
+              <CardHr />
+              {submit?.hwsubFilename && (
+                <Attachment>
+                  <AttachmentIcon src={clip} />
+                  <AttachmentName>{submit.hwsubFilename}</AttachmentName>
+                </Attachment>
+              )}
+            </Card>
+          </div>
+        ) : (
+          <div style={{ padding: "10px 20px", backgroundColor: "#fff", marginTop: "20px" }}>
+            <PageDivider />
+            <Card style={{ padding: '0px 10px' }}>
+              <div style={{ fontWeight: 700, marginBottom: 10 }}>
+                {editing ? "과제 수정" : "과제 제출"}
+              </div>
+              <CardHr style={{width:'368px', marginLeft:'-8px'}}/>
+              <div style={{ marginBottom: 10 }}>
+                <label style={{ fontSize: '14px', color: "#98a1a8", fontWeight:'600' }}>내용</label>
+                <textarea
+                  rows={6}
+                  style={{marginLeft:'-6px', width: "365px", resize: "vertical", padding: 8, border: "1px solid #ccc", borderRadius:'4px', outline:'none' }}
+                  placeholder="내용을 입력하세요"
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                />
+              </div>
+              <FlexDiv >
+                <label className="btn btn-outline-secondary" style={{ cursor: "pointer", fontSize:'13px', padding:'3px 8px' }}>
+                  파일 선택
+                  <input type="file" hidden onChange={(e) => setFile(e.target.files?.[0] || null)} />
+                </label>
+                <span style={{ marginLeft: 8, fontSize:'13px', marginTop:'0px', display:'block', width:'270px' }}>
+                  {file ? file.name : existingFileName ? existingFileName : "(첨부 없음)"}
+                </span>
+              </FlexDiv>
+              <div style={{ display: "flex", justifyContent: "end"}}>
+                <PrimaryButton type="button" onClick={onSubmit} disabled={submitting}>
+                  {submitting ? (editing ? "수정 중..." : "제출 중...") : (editing ? "수정" : "제출")}
+                </PrimaryButton>
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* 교수 피드백 */}
+        {submit?.hwsubFeedback && (
+          <div style={{ backgroundColor: "#fff", marginTop: "20px", padding: "5px 20px 24px" }}>
+            <SectionTitle>피드백</SectionTitle>
+            <SectionDivider />
+            <Card>
+              <FeedbackHead>
+                <Avatar>
+                  {submit.professorPicPath ? (
+                    <img
+                      src={`/member/picture/upload/${submit.professorPicPath}`}
+                      alt="교수 사진"
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                  ) : (
+                    <span>교</span>
+                  )}
+                </Avatar>
+                <FeedbackName>{submit.professorName || "교수"}</FeedbackName>
+              </FeedbackHead>
+              <FeedbackText>{submit.hwsubFeedback}</FeedbackText>
+            </Card>
+          </div>
+        )}
+      </MobileShell>
+      <ConfirmModal />
+    </div>
   );
 }

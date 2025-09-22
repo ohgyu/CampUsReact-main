@@ -116,6 +116,8 @@ export default function LectureOnlineDetail() {
   const lecvid_id = searchParams.get("lecvid_id");
   const memId = searchParams.get("memId");
   const navigate = useNavigate(); 
+  const user = getUserSession();
+  const isProfessor = user?.mem_auth?.includes("ROLE02");
 
   const [video, setVideo] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -139,9 +141,14 @@ export default function LectureOnlineDetail() {
         <TopBar>
           <PageTitle>온라인 강의</PageTitle>
           <TopActions>
+          {isProfessor && (
             <ModifyBtn 
-            onClick={() => navigate(`/online/${lecvid_id}/modify?lec_id=${lecId}&memId=${memId}`)}>수정</ModifyBtn>
-          </TopActions>
+              onClick={() => navigate(`/online/${lecvid_id}/modify?lec_id=${lecId}&memId=${memId}`)}
+            >
+              수정
+            </ModifyBtn>
+          )}
+        </TopActions>
         </TopBar>
         <PageDivider />
 
@@ -172,7 +179,7 @@ export default function LectureOnlineDetail() {
         <CardHr />
 
         <Footer>
-          <Button onClick={() => navigate(`/online?lec_id=${lecId}&memId=${memId}`)}>
+          <Button onClick={() => navigate(-1)}>
             목록
           </Button>
         </Footer>

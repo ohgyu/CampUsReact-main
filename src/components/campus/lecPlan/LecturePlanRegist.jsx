@@ -5,6 +5,8 @@ import styled from "styled-components";
 import { Cancle, clip } from "../img";
 import { Container } from "../topNav/TopNav";
 import { Button } from "../commons/WHComponent";
+import { useLecPlanRegistModalStore } from "../commons/modalStore";
+import { MailModal } from "../mail/MailWrite";
 
 
 const TopBar = styled.div`
@@ -98,54 +100,61 @@ const FileText = styled.span`
 
 export default function LecturePlanRegist() {
   const [fileName, setFileName] = useState("선택된 파일이 없습니다.");
+  const { visible, hideModal } = useLecPlanRegistModalStore();
 
   return (
     <div>
-         <Container style={{backgroundColor:'#fff',display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-                <img src={Cancle} style={{width:'19px', height:'19px', cursor:'pointer'}}></img>
-                <Button>등록</Button>
+      <MailModal visible={visible}>
+        {visible && (
+          <div>
+            <Container style={{ backgroundColor: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <img src={Cancle} style={{ width: '19px', height: '19px', cursor: 'pointer' }} onClick={hideModal}></img>
+              <Button>등록</Button>
             </Container>
-      
 
-      <Body>
-        <div style={{backgroundColor:'#fff', padding: '1px 29px 16px'}}>
-        <GuideWrap>
-          <GuideCard>
-            <GuideTitle>
-              강의계획서는 <b>지정된 양식으로만 제출 가능</b>합니다.
-            </GuideTitle>
-            <GuideList>
-              <li>① ‘양식 다운로드’ 버튼을 눌러 파일을 받은 후,</li>
-              <li>② 강의계획서를 작성하시고,</li>
-              <li>③ 작성 완료된 파일을 업로드해 주십시오.</li>
-            </GuideList>
-          </GuideCard>
 
-          <DownloadRow>
-            <DownloadLink>
-              <DownloadIcon src={clip} alt="" />
-              양식 다운로드
-            </DownloadLink>
-          </DownloadRow>
-        </GuideWrap>
-        </div>
+            <Body>
+              <div style={{ backgroundColor: '#fff', padding: '1px 29px 16px' }}>
+                <GuideWrap>
+                  <GuideCard>
+                    <GuideTitle>
+                      강의계획서는 <b>지정된 양식으로만 제출 가능</b>합니다.
+                    </GuideTitle>
+                    <GuideList>
+                      <li>① ‘양식 다운로드’ 버튼을 눌러 파일을 받은 후,</li>
+                      <li>② 강의계획서를 작성하시고,</li>
+                      <li>③ 작성 완료된 파일을 업로드해 주십시오.</li>
+                    </GuideList>
+                  </GuideCard>
 
-        <div style={{backgroundColor:'#fff', padding: '16px 29px', marginTop:'20px'}}>
-        <UploadSection>
-          <UploadHeader>업로드</UploadHeader>
-          <FileArea>
-            <HiddenFile
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                setFileName(f ? f.name : "선택된 파일이 없습니다.");
-              }}
-            />
-            <FileLabel htmlFor="planFile">파일선택</FileLabel>
-            <FileText>{fileName}</FileText>
-          </FileArea>
-        </UploadSection>
-        </div>
-      </Body>
+                  <DownloadRow>
+                    <DownloadLink>
+                      <DownloadIcon src={clip} alt="" />
+                      양식 다운로드
+                    </DownloadLink>
+                  </DownloadRow>
+                </GuideWrap>
+              </div>
+
+              <div style={{ backgroundColor: '#fff', padding: '16px 29px', marginTop: '20px' }}>
+                <UploadSection>
+                  <UploadHeader>업로드</UploadHeader>
+                  <FileArea>
+                    <HiddenFile
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        setFileName(f ? f.name : "선택된 파일이 없습니다.");
+                      }}
+                    />
+                    <FileLabel htmlFor="planFile">파일선택</FileLabel>
+                    <FileText>{fileName}</FileText>
+                  </FileArea>
+                </UploadSection>
+              </div>
+            </Body>
+          </div>
+        )}
+      </MailModal>
     </div>
   );
 }

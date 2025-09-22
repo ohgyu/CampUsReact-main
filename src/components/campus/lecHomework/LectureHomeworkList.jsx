@@ -10,6 +10,8 @@ import {
   WHContainer, DateBox, Title, Button, CheckButton,
   PageNation, PageArrowButton, PageNumText, PageNumberButton, PageText
 } from "../commons/WHComponent";
+import { getUserSession } from "../api";
+import { useHomeworkProRegistStore } from "../commons/modalStore";
 
 // 날짜 포맷 (yyyy-MM-dd)
 function fmtDateYMD(v) {
@@ -23,7 +25,7 @@ function fmtDateYMD(v) {
 
 function LectureHomeworkList() {
   const [params] = useSearchParams();
-  const lecId = params.get("lec_id");
+  const lecId = params.get("lecId");
   const navigate = useNavigate();
 
   // 세션에서 로그인 사용자 꺼내기
@@ -39,6 +41,8 @@ function LectureHomeworkList() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const perPageNum = 10;
+  const user = getUserSession();
+  const showModal = useHomeworkProRegistStore((state) => state.showModal);
 
   useEffect(() => {
     if (!lecId || !memId) return;
@@ -74,9 +78,9 @@ function LectureHomeworkList() {
   // 클릭 시 경로 분기
   const goDetail = (row) => {
     if (role === "professor") {
-      navigate(`/homework/pro/${row.hwNo}`);
+      navigate(`/homework/pro/${row.hwNo}?memId=${user.mem_id}`);
     } else {
-      navigate(`/homework/${row.hwNo}/${memId}`);
+      navigate(`/homework/${row.hwNo}/${memId}?memId=${user.mem_id}`);
     }
   };
 
@@ -114,7 +118,7 @@ function LectureHomeworkList() {
         <FlexDiv>
           <CatTitle>과제제출</CatTitle>
           {role === "professor" && (
-            <Button onClick={() => navigate(`/homework/write?lec_id=${lecId || ""}`)}>
+            <Button onClick={showModal}>
               글쓰기
             </Button>
           )}

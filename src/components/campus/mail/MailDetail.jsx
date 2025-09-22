@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { imp, trash, unImp, clip, Cancle } from "../img";
+import { imp, trash, unImp, clip, Cancle, allSelect } from "../img";
 import { Container } from "../topNav/TopNav";
+import { getMailDetail, getUserSession, updateMailDetailWaste, updateMailReceiveImpToggle, updateMailSendImpToggle, updateMailWaste } from "../api";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { Button } from "../commons/WHComponent";
+import Toast from "../commons/Toast";
+import { useToastStore } from "../commons/modalStore";
 
 const MobileShell = styled.div`
   width: 100vw;
@@ -54,12 +59,12 @@ const TopBtn = styled.button`
 const SubHeader = styled.div`
   display: flex;
   align-items: center;
-  margin: 4px 0 10px;
+  margin: 4px 0 5px;
   font-size: 12px;
   color: #98a1a8;
 `;
 const TimeText = styled.div`
-font-size: 12px;
+  font-size: 12px;
   flex: 1;
   margin-left: 10px;
 `;
@@ -162,6 +167,7 @@ const Chip = styled.span`
   border: 1px solid #e0e7ec;
   font-size: 12px;
   color: #1f2937;
+  margin-left: -20px;
 `;
 const ChipName = styled.span`
   font-weight: 600;
@@ -171,8 +177,7 @@ const ChipEmail = styled.span`
 
 const BodyText = styled.div`
   height: 200px;
-  font-size: 13px;
-  color: #6b7680;
+  font-size: 14px;
   line-height: 1.7;
   white-space: pre-line;
   margin-left: 10px;
@@ -194,12 +199,13 @@ const AttachmentIcon = styled.img`
   object-fit: contain;
 `;
 
-const AttachmentName = styled.div`
+const AttachmentName = styled.a`
   font-size: 13px;
   color: #707070;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-decoration: 'none';
 `;
 
 const CardFooter = styled.div`
@@ -208,100 +214,201 @@ const CardFooter = styled.div`
   justify-content: flex-end;
   gap: 8px;
 `;
-const Button = styled.button`
-  height: 28px;
-  padding: 0 12px;
-  font-size: 12px;
-  border: 1px solid #dfe5ea;
-  background: #fff;
-  color: #59636b;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-right: 10px;
-`;
 
-export default function MailDetail({ onClose }) {
-  const [isStarred, setIsStarred] = useState(false);
-  const toggleStar = () => setIsStarred(v => !v);
-  const receivedAt = "2025-08-29 21:49";
+const BoxButton = styled.input`
+    width: 22px;
+    height: 22px;
+    border: 1px solid #aaa;
+    border-radius: 3px;
+    background-color: #fff;
+    background-image: url(${allSelect});
+    background-size: 60%;
+    background-repeat: no-repeat;
+    background-position: center;
+    outline: none;
+`
 
-  useEffect(() => {
-    // 로컬 스토리지 유지 예시 (제목을 key로 사용)
-    const saved = localStorage.getItem("mail-starred:LMS-0829");
-    if (saved === "1") setIsStarred(true);
-  }, []);
-  useEffect(() => {
-    localStorage.setItem("mail-starred:LMS-0829", isStarred ? "1" : "0");
-  }, [isStarred]);
+export default function MailDetail() {
+  const [loading, setLoading] = useState(true);
+  const user = getUserSession();
+  const [data, setData] = useState(null);
+  const query = useQuery();
+  const location = useLocation();
+  const { mail_id } = useParams(); // 경로에서 mail_id 가져오기
+  const params = new URLSearchParams(useLocation().search);
+  const memId = params.get("memId"); // 쿼리에서 memId 가져오기
+  const navigate = useNavigate();
+  const stripHtmlTags = (html) => html?.replace(/<\/?[^>]+(>|$)/g, "") || "";
+  const { showToast } = useToastStore();
 
-  const handleClose = () => {
-    if (onClose) onClose();
-    else window.history.back();
+  function useQuery() {
+    return new URLSearchParams(useLocation().search);
+  }
+
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    const yy = String(date.getFullYear()).slice(-2); // 연도 뒤 2자리
+    const mm = String(date.getMonth() + 1).padStart(2, '0'); // 월 0~11이므로 +1
+    const dd = String(date.getDate()).padStart(2, '0'); // 일
+    const hh = String(date.getHours()).padStart(2, '0'); // 시
+    const min = String(date.getMinutes()).padStart(2, '0'); // 분
+    return `${yy}-${mm}-${dd} ${hh}:${min}`;
   };
 
+  useEffect(() => {
+    if (!mail_id || !memId) return;  // 둘 다 없으면 실행하지 않음
+
+    const mailIdNum = parseInt(mail_id, 10); // NaN 방지
+    getMailDetailPage(mailIdNum, memId);
+  }, [mail_id, memId]);
+
+  async function getMailDetailPage(mail_id, memId) {
+    try {
+      let response = await getMailDetail(mail_id, memId);
+      setData(response.data);
+      console.log(response);
+      setLoading(false);
+    } catch (e) {
+      console.log(e);
+      alert("데이터를 불러오는데 실패했습니다. 잠시 후 다시 시도해 주세요.");
+    }
+  }
+
+  // 휴지통 보내기
+  const handleWaste = async () => {
+
+    try {
+      const res = await updateMailDetailWaste(mail_id);
+
+      console.log("서버 응답:", res);
+      console.log("res.data:", res.data);
+
+      if (res.data?.success) {
+        showToast("휴지통으로 이동했습니다.");
+
+        navigate(-1);
+      } else {
+        showToast("휴지통 이동 실패");
+      }
+    } catch (e) {
+      console.error(e);
+      showToast("에러가 발생했습니다.");
+    }
+  };
+
+  // 중요 토글
+  const handleToggleImp = async () => {
+    if (!data?.detail || !user?.mem_id) return;
+
+    const mail_id = data.detail.mail_id;
+    const isReceiveMail = data.detail.mail_sender !== user.mem_id;
+
+    const prevRimp = data.detail.mail_rimp;
+    const prevSimp = data.detail.mail_simp;
+
+    // 클라이언트에서 즉시 UI 변경
+    setData(prev => {
+      const updatedDetail = { ...prev.detail };
+
+      if (isReceiveMail) {
+        updatedDetail.mail_rimp = prevRimp === 0 ? 1 : 0;
+      }
+
+      if (!isReceiveMail) {
+        updatedDetail.mail_simp = prevSimp === 0 ? 1 : 0;
+      }
+
+      return { ...prev, detail: updatedDetail };
+    });
+
+    try {
+      if (isReceiveMail) {
+        await updateMailReceiveImpToggle(mail_id);
+      } else {
+        await updateMailSendImpToggle(mail_id);
+      }
+    } catch (e) {
+      console.error(e);
+      // 실패 시 이전 상태로 롤백
+      setData(prev => ({
+        ...prev,
+        detail: {
+          ...prev.detail,
+          mail_rimp: prevRimp,
+          mail_simp: prevSimp,
+        }
+      }));
+      alert("중요 상태 변경 실패");
+    }
+  };
+
+
   return (
+    <>
       <MobileShell>
-        <Container style={{backgroundColor:'#fff',display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-            <img src={Cancle} style={{width:'19px', height:'19px', cursor:'pointer'}} onClick={handleClose}></img>
-        </Container>
+        <div style={{ display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+          {!loading && data &&
+            data.detail &&
+            < div style={{ padding: '5px 20px 24px' }}>
+              <SubHeader>
+                <TimeText>{formatDate(data.detail.mail_sender === user.mem_id ? data.detail.mail_sdate : data.detail.mail_rdate)}</TimeText>
+                <BoxButton type='button' style={{ backgroundImage: `url(${trash})`, cursor: 'pointer' }} onClick={handleWaste}></BoxButton>
+              </SubHeader>
 
-        <div style={{padding: '12px 20px 24px'}}>
-        <SubHeader>
-          <TimeText>{receivedAt}</TimeText>
-          <CloseBtn aria-label="닫기" onClick={handleClose}>
-          <img src={trash} alt="닫기" style={{ width: 14, height: 14 }} />
-          </CloseBtn>
-        </SubHeader>
+              <PageDivider />
 
-        <PageDivider />
+              <Card>
+                <TitleRow>
+                  <StarBtn >
+                    <StarImg src={(data?.detail?.mail_rimp === 0 && data?.detail?.mail_simp === 0) ? unImp : imp} onClick={handleToggleImp} />
+                  </StarBtn>
+                  <div>
+                    <MailTitle>{data.detail.mail_name}</MailTitle>
+                  </div>
+                </TitleRow>
 
-        <Card>
-          <TitleRow>
-            <StarBtn
-              aria-label={isStarred ? "즐겨찾기 해제" : "즐겨찾기 추가"}
-              aria-pressed={isStarred}
-              onClick={toggleStar}
-            >
-             <StarImg src={isStarred ? imp : unImp} alt={isStarred ? "starred" : "star"} />
-            </StarBtn>
-            <div>
-              <MailTitle>LMS 자료 접근 확인 요청</MailTitle>
+                <Meta>
+                  <MetaLabel>보낸 사람</MetaLabel>
+                  <ChipRow>
+                    <Chip>
+                      <ChipName>{data.detail.sender_name}</ChipName>
+                      <ChipEmail>{data.detail.sender_email}</ChipEmail>
+                    </Chip>
+                  </ChipRow>
+
+                  <MetaLabel>받는 사람</MetaLabel>
+                  <ChipRow>
+                    <Chip>
+                      <ChipName>{data.detail.receiver_name}</ChipName>
+                      <ChipEmail>{data.detail.receiver_email}</ChipEmail>
+                    </Chip>
+                  </ChipRow>
+                </Meta>
+
+                <CardHr />
+                <BodyText>{stripHtmlTags(data.detail.mail_desc)}</BodyText>
+
+                {data.detail.mailFileList?.length > 0 && (
+                  <Attachment>
+                    <AttachmentIcon src={clip} />
+                    <AttachmentName href={`/api/message/getFile?mafile_no=${data.detail.mailFileList[0].mafile_no}`}
+                      fileName={data.detail.mailFileList[0].mafile_name.split('$$')[1]} onMouseDown={(e) => e.preventDefault()}>
+                      {data.detail.mailFileList[0].mafile_name.split('$$')[1]}
+                    </AttachmentName>
+                  </Attachment>
+                )}
+
+                <CardHr />
+
+                <CardFooter>
+                  <Button onClick={() => navigate(-1)}>목록</Button>
+                </CardFooter>
+              </Card>
             </div>
-          </TitleRow>
 
-          <Meta>
-            <MetaLabel>보낸 사람</MetaLabel>
-            <ChipRow>
-              <Chip>
-                <ChipName>한서윤</ChipName>
-                <ChipEmail>20220025@campus.com</ChipEmail>
-              </Chip>
-            </ChipRow>
-
-            <MetaLabel>받는 사람</MetaLabel>
-            <ChipRow>
-              <Chip>
-                <ChipName>김민준</ChipName>
-                <ChipEmail>20220001@campus.com</ChipEmail>
-              </Chip>
-            </ChipRow>
-          </Meta>
-
-          <CardHr />
-          <BodyText>{"LMS 자료 접근 가능 여부 확인 부탁드립니다."}</BodyText>
-
-          <Attachment>
-            <AttachmentIcon src={clip}/>
-            <AttachmentName>자바프로그래밍 권오규 10주차.hwp</AttachmentName>
-          </Attachment>
-
-          <CardHr />
-
-          <CardFooter>
-            <Button>목록</Button>
-          </CardFooter>
-        </Card>
+          }
         </div>
-      </MobileShell>
+      </MobileShell >
+    </>
   );
 }

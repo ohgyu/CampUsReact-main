@@ -35,7 +35,6 @@ const ModalContent = styled.div`
   max-height: 90vh;
   overflow-y: auto;
   border-radius: 12px;
-  padding: 20px;
   position: relative;
 `;
 
@@ -211,7 +210,8 @@ function Mypage() {
     <>
       <ModalOverlay onClick={hideModal}>
         <ModalContent onClick={(e) => e.stopPropagation()}>
-          <FlexDiv style={{ position: 'relative', justifyContent: 'center', alignItems: 'center' }}>
+            <div style={{padding: '20px'}}>
+          <FlexDiv style={{ position: 'relative', justifyContent: 'center', alignItems: 'center'}}>
             <ExitButton onClick={hideModal}>
               <img src={Cancle} alt="닫기" style={{ width: '19px', height: '19px' }} />
             </ExitButton>
@@ -230,6 +230,7 @@ function Mypage() {
               저장
             </RegistButton>
           </FlexDiv>
+          </div>
 
           {/* 프로필 사진 */}
           <PictureContainer>
@@ -247,8 +248,9 @@ function Mypage() {
           </PictureContainer>
 
           <Wrap>
+            
             <ContentBox style={{height:'auto', marginBottom:'10px'}}>
-              <Header style={{paddingTop:'18px', alignItems:'center',paddingLeft:'10px', paddingRight:'10px'}}>
+              <Header style={{paddingTop:'20px', alignItems:'center',paddingLeft:'20px', paddingRight:'20px'}}>
                 <MyTitleText>기본정보</MyTitleText>
                 <GreenBox style={{width:'97px', height:'26px', lineHeight:'23px', marginLeft:'auto'}} onClick={openModal}>
                   비밀번호 변경
@@ -270,8 +272,10 @@ function Mypage() {
                 </tbody>
               </Table>
             </ContentBox>
+            
 
             {/* ✅ 학사정보 (학생일 경우만 렌더링) */}
+            <div style={{marginTop:'20px'}}>
             {member.mem_auth && member.mem_auth.includes("ROLE01") && (
               <ContentBox style={{height:'auto', marginBottom:'10px'}}>
                 <Header style={{paddingTop:'20px',paddingBottom:'10px', alignItems:'center',paddingLeft:'26px'}}>
@@ -295,6 +299,7 @@ function Mypage() {
                 </Table>
               </ContentBox>
             )}
+            </div>
           </Wrap>
         </ModalContent>
       </ModalOverlay>

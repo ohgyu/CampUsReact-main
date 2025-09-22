@@ -97,7 +97,7 @@ export default function LecturePlanModify() {
     <div>
          <Container style={{backgroundColor:'#fff',display:'flex', justifyContent:'space-between', alignItems:'center'}}>
                 <img src={Cancle} style={{width:'19px', height:'19px', cursor:'pointer'}}></img>
-                <Button>등록</Button>
+                <Button>수정</Button>
             </Container>
       
 

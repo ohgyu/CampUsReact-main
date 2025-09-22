@@ -87,6 +87,8 @@ function Login() {
       )
       login(res.data);
       sessionStorage.setItem('user', JSON.stringify(res.data));
+      const memId = res.data.mem_id;
+    navigate(`/?memId=${res.data.mem_id}`);
       setToastMsg("로그인 성공");
     } catch (err) {
       setToastMsg(err.response?.data || '로그인 실패')

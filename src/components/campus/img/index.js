@@ -45,6 +45,8 @@ import searchbtn from './searchbtn.png'
 
 
 import campus from "./campus.png";
+import mailWrite from "./mailWrite.png";
+
 
 
 
@@ -56,5 +58,5 @@ export {dropdownArrow, searchIcon, listArrow, pageArrow1, pageArrow2, pageArrow3
         logo, Cancle, user1, home, homehv, lecture, lecturehv, project, projecthv,
         post, posthv, mypage, pictureMdfBtn, user11, right,
 
-        campus, searchbtn,
+        campus, searchbtn, mailWrite,
 };

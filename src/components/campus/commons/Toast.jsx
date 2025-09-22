@@ -15,7 +15,7 @@ const ToastContainer = styled.div`
   display: flex;
   justify-content: center; /* 가로 중앙 정렬 */
   pointer-events: none; /* 클릭 방해 방지 */
-  z-index: 10000;
+  z-index: 50000;
 `;
 
 const ToastWrapper = styled.div`

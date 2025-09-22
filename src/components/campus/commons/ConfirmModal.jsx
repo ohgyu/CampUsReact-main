@@ -9,7 +9,7 @@ const Overlay = styled.div`
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.2);
   display: flex;
   justify-content: center;
   align-items: flex-end;
@@ -19,11 +19,11 @@ const Overlay = styled.div`
 
 const ModalBox = styled.div`
   background: white;
-  padding: 20px;
+  padding: 30px;
   border-radius: 12px;
-  width: 400px;
+  width: 350px;
   text-align: center;
-    margin-bottom: 50px;
+  margin-bottom: 50px;
 `;
 const Button = styled.button`
     border: none;
@@ -37,10 +37,9 @@ const Line = styled.div`
     background-color: #aaa;
 `
  const ConfirmText = styled.p`
-    font-size: 12px;
+    font-size: 14px;
     text-align: left;
-    margin-left: 10px;
-    line-height: 10px;
+    line-height: 25px;
  `
 function ConfirmModal() {
   const { confirmVisible, confirmMessage, onConfirm, hideConfirm } = useModalStore();
@@ -55,10 +54,9 @@ function ConfirmModal() {
   return (
     <Overlay>
       <ModalBox>
-        <ConfirmText>이 페이지 내용 : </ConfirmText>
-        <ConfirmText>{confirmMessage}</ConfirmText>
-        <div style={{ marginTop: "20px" ,display:'flex',justifyContent:'space-evenly'}}>
-          <Button onClick={hideConfirm} style={{ marginRight: "10px" }}>취소</Button>
+        <ConfirmText style={{marginTop:'-5px'}}>{confirmMessage}</ConfirmText>
+        <div style={{ marginTop: "30px" ,display:'flex',justifyContent:'center', gap:'75px', marginBottom:'-10px'}}>
+          <Button onClick={hideConfirm}>취소</Button>
           <Line />
           <Button onClick={handleConfirm}>확인</Button>
         </div>
