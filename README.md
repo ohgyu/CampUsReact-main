@@ -56,12 +56,27 @@ React를 활용하여 모바일에서도 접근 가능한 학습관리 시스템
 
 ---
 
+## Screenshots
+
+### 과제 제출 (Homework)
+![Homework](src/components/campus/img/mhomework.png)
+
+### 마이페이지 (MyPage)
+![MyPage](src/components/campus/img/mmypage.png)
+
+### 출결 관리 (Attendance)
+![Attendance](src/components/campus/img/mcheck.png)
+
+---
+
 ## Project Structure
 
 ```
 CampUsReact-main
  ├ public
  ├ src
+ │  ├ components
+ │  └ pages
  ├ index.html
  ├ package.json
  └ vite.config.js
